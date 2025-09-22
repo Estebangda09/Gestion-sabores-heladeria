@@ -622,6 +622,11 @@
             background-color: #2196F3;
             color: white;
         }
+
+        .distribute-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
     </style>
 </head>
 
@@ -666,7 +671,8 @@
 
                 <div class="action-buttons">
                     <button id="save-btn" class="save-btn"><i class="fas fa-save"></i> Guardar</button>
-                    <button id="sync-btn" class="sync-btn" style="display: none;"><i class="fas fa-sync-alt"></i> Distribuir contenido a pantallas</button>
+                    <button id="sync-btn" class="sync-btn" style="display: none;"><i class="fas fa-sync-alt"></i> Sincronizar</button>
+                    <button id="distribute-btn" class="distribute-btn" style="display: none;"><i class="fas fa-share-alt"></i> Distribuir a pantallas</button>
                 </div>
             </div>
 
@@ -685,7 +691,7 @@
 
     <div id="syncModal" class="modal">
         <div class="modal-content">
-            <h3>Distribuir a otras sucursales</h3>
+            <h3>Sincronizar con otras sucursales</h3>
             <p>Selecciona las sucursales para aplicar los cambios de la sucursal principal:</p>
             <div id="syncBranchList" class="branch-list">
                 </div>
@@ -884,7 +890,7 @@
             });
             addEventListeners();
             updateVisualization();
-            updateSyncButtonVisibility();
+            updateButtonsVisibility();
         }
 
         function updateVisualization() {
@@ -1192,20 +1198,27 @@
             alert("Cambios guardados con éxito.");
         }
 
-        function syncChanges() {
+        function syncBranches() {
             if (currentBranchId === MAIN_BRANCH_ID) {
                 showSyncModal();
             } else {
-                alert("La distribución solo está disponible para la Sucursal Principal.");
+                alert("La sincronización solo está disponible para la Sucursal Principal.");
             }
         }
 
-        function updateSyncButtonVisibility() {
+        function distributeToScreens() {
+            alert("La actualización en tiempo real de pantallas en otros dispositivos requiere un servidor.\n\nPara que los cambios se reflejen, primero debes guardar y sincronizar los datos, y luego refrescar (recargar) la página en la pantalla de visualización.");
+        }
+
+        function updateButtonsVisibility() {
             const syncButton = document.getElementById('sync-btn');
+            const distributeButton = document.getElementById('distribute-btn');
             if (currentBranchId === MAIN_BRANCH_ID) {
                 syncButton.style.display = 'block';
+                distributeButton.style.display = 'block';
             } else {
                 syncButton.style.display = 'none';
+                distributeButton.style.display = 'none';
             }
         }
 
@@ -1243,7 +1256,7 @@
             saveBranches();
             renderCategories();
             hideSyncModal();
-            alert("Distribución completada con éxito.");
+            alert("Sincronización completada con éxito. Las pantallas se actualizarán automáticamente en la próxima recarga.");
         }
 
 
@@ -1499,7 +1512,8 @@
                 document.getElementById('sync-confirm-btn').addEventListener('click', applySyncChanges);
                 document.getElementById('sync-cancel-btn').addEventListener('click', hideSyncModal);
                 document.getElementById('save-btn').addEventListener('click', saveAllChanges);
-                document.getElementById('sync-btn').addEventListener('click', syncChanges);
+                document.getElementById('sync-btn').addEventListener('click', syncBranches);
+                document.getElementById('distribute-btn').addEventListener('click', distributeToScreens);
 
                 document.querySelectorAll('.view-option-btn').forEach(button => {
                     button.addEventListener('click', function () {
