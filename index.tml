@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Sabores de Helado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff7b9c;
+            --secondary-color: #ffc759;
+            --accent-color: #c27ba0;
+            --dark-color: #5e548e;
+            --light-color: #f8f4f9;
+            --vegan-color: #4caf50;
+            --featured-color: #ff9800;
+            --screen-bg: rgba(255, 255, 255, 0.9);
+            --category-bg: rgba(248, 244, 249, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f4f9, #e6e1f0);
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 180px);
+        }
+
+        .management-panel {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .display-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--screen-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .visualization {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .category-visual {
+            background: var(--category-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-header-visual {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .category-name-visual {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .flavors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .flavor-item-visual {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flavor-name-visual {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .flavor-tag {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .vegan {
+            background: var(--vegan-color);
+            color: white;
+        }
+
+        .featured {
+            background: var(--featured-color);
+            color: white;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .category {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--light-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .flavor-list {
+            margin-left: 10px;
+        }
+
+        .flavor-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .flavor-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .toggle-category {
+            background: var(--secondary-color);
+            color: #333;
+        }
+
+        .toggle-category:hover {
+            background: #ffb224;
+        }
+
+        .toggle-flavor {
+            margin-right: 10px;
+            background: #ddd;
+            color: #333;
+            padding: 4px 8px;
+            font-size: 12px;
+            width: 70px;
+        }
+
+        .toggle-flavor.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .screen-selector {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .screen-btn {
+            padding: 3px 8px;
+            font-size: 12px;
+            background: #eee;
+        }
+
+        .screen-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .flavor-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .vegan-btn {
+            background: #e8f5e9;
+            color: var(--vegan-color);
+        }
+
+        .vegan-btn.active {
+            background: var(--vegan-color);
+            color: white;
+        }
+
+        .featured-btn {
+            background: #fff3e0;
+            color: var(--featured-color);
+        }
+
+        .featured-btn.active {
+            background: var(--featured-color);
+            color: white;
+        }
+
+        .categories-container {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+        }
+
+        .url-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--light-color);
+            border-radius: 8px;
+        }
+
+        .url-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .url-btn {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .open-btn {
+            background: var(--vegan-color);
+            color: white;
+        }
+
+        .open-btn-2 {
+            background: var(--featured-color);
+            color: white;
+        }
+
+        .copy-btn {
+            background: var(--dark-color);
+            color: white;
+        }
+
+        .flavor-name-text {
+            flex: 1;
+        }
+
+        /* Estilos adicionales para el sistema de gestión */
+        .category-title-container {
+            flex: 1;
+        }
+
+        .category-title-input {
+            background: white;
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .category-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-category-btn,
+        .delete-category-btn,
+        .edit-flavor-btn,
+        .delete-flavor-btn {
+            padding: 6px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .edit-category-btn,
+        .edit-flavor-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .edit-category-btn:hover,
+        .edit-flavor-btn:hover {
+            background: #1976D2;
+        }
+
+        .delete-category-btn,
+        .delete-flavor-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .delete-category-btn:hover,
+        .delete-flavor-btn:hover {
+            background: #d32f2f;
+        }
+
+        .flavor-name-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .flavor-name-input {
+            background: white;
+            border: 1px solid var(--accent-color);
+            border-radius: 3px;
+            padding: 4px 6px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .add-flavor-btn {
+            background: var(--secondary-color);
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .add-flavor-btn:hover {
+            background: #ffb224;
+            transform: translateY(-1px);
+        }
+
+        /* Scroll personalizado */
+        .categories-container::-webkit-scrollbar,
+        .visualization::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .categories-container::-webkit-scrollbar-track,
+        .visualization::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .categories-container::-webkit-scrollbar-thumb,
+        .visualization::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        .categories-container::-webkit-scrollbar-thumb:hover,
+        .visualization::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-color);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .management-panel {
+                max-width: 100%;
+            }
+        }
+
+        .view-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .view-option-btn {
+            padding: 8px 15px;
+            background: #eee;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .view-option-btn.active {
+            background: var(--dark-color);
+            color: white;
+        }
+
+        /* Estilos especiales para modo pantalla */
+        body.fullscreen-mode {
+            background: linear-gradient(135deg, #f8f4f9, #e6e1f0);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .visualization.fullscreen {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+        }
+
+        .category-name-visual {
+            font-size: 2vw;
+        }
+
+        .flavor-name-visual {
+            font-size: 1.2vw;
+        }
+
+        .branch-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .branch-controls label {
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .branch-selector {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .add-branch-btn,
+        .delete-branch-btn,
+        .edit-branch-btn {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .add-branch-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .delete-branch-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .edit-branch-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* Sync modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .modal-content .branch-list {
+            text-align: left;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal-content .branch-list label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .modal-content .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .modal-content button {
+            flex: 1;
+            padding: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .sync-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>Gestor de Sabores de Helado</h1>
+            <div class="url-section">
+                <h3>Visualización en Pantalla</h3>
+                <div class="url-buttons">
+                    <button class="url-btn open-btn" id="open-screen1">
+                        <i class="fas fa-external-link-alt"></i> Pantalla 1
+                    </button>
+                    <button class="url-btn open-btn-2" id="open-screen2">
+                        <i class="fas fa-external-link-alt"></i> Pantalla 2
+                    </button>
+                    <button class="url-btn copy-btn" id="copy-url">
+                        <i class="far fa-copy"></i> Copiar URL
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="management-panel">
+                <h2>Gestión de Sucursales y Sabores</h2>
+                <div class="branch-controls">
+                    <label for="branch-selector">Sucursal:</label>
+                    <select id="branch-selector" class="branch-selector"></select>
+                    <button id="edit-branch" class="edit-branch-btn"><i class="fas fa-edit"></i></button>
+                    <button id="add-branch" class="add-branch-btn"><i class="fas fa-plus"></i></button>
+                    <button id="delete-branch" class="delete-branch-btn"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="categories-container" id="categories-container">
+                    </div>
+
+                <button id="add-category"
+                    style="background: var(--primary-color); color: white; width: 100%; margin-top: 20px;">
+                    <i class="fas fa-plus"></i> Agregar Categoría
+                </button>
+                
+                <div class="action-buttons">
+                    <button id="save-btn" class="save-btn"><i class="fas fa-save"></i> Guardar</button>
+                    <button id="sync-btn" class="sync-btn" style="display: none;"><i class="fas fa-sync-alt"></i> Sincronizar</button>
+                </div>
+            </div>
+
+            <div class="display-panel">
+                <h2>Vista Previa</h2>
+                <div class="view-options">
+                    <button class="view-option-btn active" data-screen="1">Pantalla 1</button>
+                    <button class="view-option-btn" data-screen="2">Pantalla 2</button>
+                </div>
+
+                <div class="visualization" id="visualization">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="syncModal" class="modal">
+        <div class="modal-content">
+            <h3>Sincronizar con otras sucursales</h3>
+            <p>Selecciona las sucursales para aplicar los cambios de la sucursal principal:</p>
+            <div id="syncBranchList" class="branch-list">
+                </div>
+            <div class="modal-buttons">
+                <button id="sync-confirm-btn" style="background: var(--vegan-color); color: white;">Aplicar</button>
+                <button id="sync-cancel-btn" style="background: #f44336; color: white;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MAIN_BRANCH_ID = 1;
+        let branches = [];
+        let currentBranchId = null;
+        let currentScreenView = 1;
+
+        const initialBranches = [
+            {
+                id: MAIN_BRANCH_ID,
+                name: "Sucursal Principal",
+                categories: [
+                    {
+                        id: 1,
+                        name: "Frutales al agua",
+                        enabled: true,
+                        screen: 1,
+                        flavors: [
+                            { id: 101, name: "Ananá", enabled: true, vegan: true, featured: false },
+                            { id: 102, name: "Durazno", enabled: true, vegan: true, featured: false },
+                            { id: 103, name: "Frambuesa", enabled: true, vegan: true, featured: true },
+                            { id: 104, name: "Frutilla", enabled: true, vegan: true, featured: false },
+                            { id: 105, name: "Frutos del bosque", enabled: true, vegan: true, featured: false },
+                            { id: 106, name: "Fruttalada", enabled: true, vegan: true, featured: false },
+                            { id: 107, name: "Limón", enabled: true, vegan: true, featured: false },
+                            { id: 108, name: "Mandarina c/ chocolate", enabled: true, vegan: false, featured: false }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: "Cremas",
+                        enabled: true,
+                        screen: 1,
+                        flavors: [
+                            { id: 201, name: "Americana", enabled: true, vegan: false, featured: false },
+                            { id: 202, name: "Chocotorta", enabled: true, vegan: false, featured: true },
+                            { id: 203, name: "Crema del cielo", enabled: true, vegan: false, featured: false },
+                            { id: 204, name: "Flan", enabled: true, vegan: false, featured: false },
+                            { id: 205, name: "Frutilla a la reina", enabled: true, vegan: false, featured: false },
+                            { id: 206, name: "Granizado", enabled: true, vegan: false, featured: false },
+                            { id: 207, name: "Kinder", enabled: true, vegan: false, featured: false },
+                            { id: 208, name: "Marroc", enabled: true, vegan: false, featured: false },
+                            { id: 209, name: "Mascarpone", enabled: true, vegan: false, featured: false },
+                            { id: 210, name: "Menta granizada", enabled: true, vegan: false, featured: false },
+                            { id: 211, name: "Nutella", enabled: true, vegan: false, featured: true },
+                            { id: 212, name: "Oreo", enabled: true, vegan: false, featured: false },
+                            { id: 213, name: "Pistacho", enabled: true, vegan: false, featured: false },
+                            { id: 214, name: "Sambayón", enabled: true, vegan: false, featured: false },
+                            { id: 215, name: "Sambayón Faricci", enabled: true, vegan: false, featured: false },
+                            { id: 216, name: "Tiramisú", enabled: true, vegan: false, featured: false },
+                            { id: 217, name: "Tramontana", enabled: true, vegan: false, featured: false },
+                            { id: 218, name: "Vainilla", enabled: true, vegan: false, featured: false }
+                        ]
+                    },
+                ]
+            },
+            {
+                id: 2,
+                name: "Sucursal Norte",
+                categories: [
+                    {
+                        id: 3,
+                        name: "Frutales a la crema",
+                        enabled: true,
+                        screen: 2,
+                        flavors: [
+                            { id: 301, name: "Banana split", enabled: true, vegan: false, featured: false },
+                            { id: 302, name: "Cereza a la crema", enabled: true, vegan: false, featured: false },
+                            { id: 303, name: "Crema maracuyá", enabled: true, vegan: false, featured: false },
+                            { id: 304, name: "Frutilla vip", enabled: true, vegan: false, featured: true },
+                            { id: 305, name: "Limón Faricci", enabled: true, vegan: false, featured: false },
+                            { id: 306, name: "Pantera rosa", enabled: true, vegan: false, featured: false },
+                            { id: 307, name: "Patagonia", enabled: true, vegan: false, featured: false }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        name: "Mousses",
+                        enabled: true,
+                        screen: 2,
+                        flavors: [
+                            { id: 401, name: "De Baileys", enabled: true, vegan: false, featured: false },
+                            { id: 402, name: "De chocolate", enabled: true, vegan: false, featured: true },
+                            { id: 403, name: "De limón", enabled: true, vegan: false, featured: false }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        function saveBranches() {
+            localStorage.setItem('branches', JSON.stringify(branches));
+            console.log('Datos guardados en localStorage');
+        }
+
+        function loadBranches() {
+            const storedBranches = localStorage.getItem('branches');
+            if (storedBranches) {
+                branches = JSON.parse(storedBranches);
+            } else {
+                branches = initialBranches;
+                saveBranches();
+            }
+        }
+
+        function getCategoriesForCurrentBranch() {
+            const branch = branches.find(b => b.id === currentBranchId);
+            return branch ? branch.categories : [];
+        }
+
+        function renderBranchSelector() {
+            const selector = document.getElementById('branch-selector');
+            selector.innerHTML = '';
+            branches.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch.id;
+                option.textContent = branch.name;
+                selector.appendChild(option);
+            });
+            selector.value = currentBranchId;
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            const categories = getCategoriesForCurrentBranch();
+
+            categories.forEach(category => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                categoryElement.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title-container">
+                            <input type="text" class="category-title-input" value="${category.name}"
+                                   data-id="${category.id}" style="display: none;">
+                            <div class="category-title" data-id="${category.id}">${category.name}</div>
+                        </div>
+                        <div class="category-controls">
+                            <button class="edit-category-btn" data-id="${category.id}" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-category-btn" data-id="${category.id}" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="toggle-category" data-id="${category.id}">
+                                ${category.enabled ? 'Desactivar' : 'Activar'}
+                            </button>
+                            <div class="screen-selector">
+                                <button class="screen-btn ${category.screen === 1 ? 'active' : ''}" data-id="${category.id}" data-screen="1">P1</button>
+                                <button class="screen-btn ${category.screen === 2 ? 'active' : ''}" data-id="${category.id}" data-screen="2">P2</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flavor-list">
+                        ${category.flavors.map(flavor => `
+                            <div class="flavor-item">
+                                <button class="toggle-flavor ${flavor.enabled ? 'active' : ''}" data-cat-id="${category.id}" data-id="${flavor.id}">
+                                    ${flavor.enabled ? 'Ocultar' : 'Mostrar'}
+                                </button>
+                                <div class="flavor-name-container">
+                                    <input type="text" class="flavor-name-input" value="${flavor.name}"
+                                           data-cat-id="${category.id}" data-id="${flavor.id}" style="display: none;">
+                                    <span class="flavor-name-text" data-cat-id="${category.id}" data-id="${flavor.id}">${flavor.name}</span>
+                                </div>
+                                <div class="flavor-actions">
+                                    <button class="edit-flavor-btn" data-cat-id="${category.id}" data-id="${flavor.id}" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete-flavor-btn" data-cat-id="${category.id}" data-id="${flavor.id}" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <button class="action-btn vegan-btn ${flavor.vegan ? 'active' : ''}" data-cat-id="${category.id}" data-id="${flavor.id}" title="Vegano">
+                                        <i class="fas fa-leaf"></i>
+                                    </button>
+                                    <button class="action-btn featured-btn ${flavor.featured ? 'active' : ''}" data-cat-id="${category.id}" data-id="${flavor.id}" title="Destacado">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <button class="add-flavor-btn" data-cat-id="${category.id}">
+                            <i class="fas fa-plus"></i> Agregar Sabor
+                        </button>
+                    </div>
+                `;
+                container.appendChild(categoryElement);
+            });
+            addEventListeners();
+            updateVisualization();
+            updateSyncButtonVisibility();
+        }
+
+        function updateVisualization() {
+            const visualization = document.getElementById('visualization');
+            visualization.innerHTML = '';
+            const categories = getCategoriesForCurrentBranch();
+            const screenCategories = categories.filter(cat => cat.screen === currentScreenView && cat.enabled);
+            if (screenCategories.length === 0) {
+                visualization.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">No hay categorías activas para esta pantalla</div>';
+                return;
+            }
+            screenCategories.forEach(category => {
+                const categoryVisual = document.createElement('div');
+                categoryVisual.className = 'category-visual';
+                const activeFlavors = category.flavors.filter(flavor => flavor.enabled);
+                if (activeFlavors.length === 0) {
+                    return;
+                }
+                categoryVisual.innerHTML = `
+                    <div class="category-header-visual">
+                        <div class="category-name-visual">${category.name}</div>
+                    </div>
+                    <div class="flavors-list">
+                        ${activeFlavors.map(flavor => `
+                            <div class="flavor-item-visual">
+                                <span class="flavor-name-visual">${flavor.name}</span>
+                                ${flavor.vegan ? '<span class="flavor-tag vegan">VEGANO</span>' : ''}
+                                ${flavor.featured ? '<span class="flavor-tag featured">DESTACADO</span>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                visualization.appendChild(categoryVisual);
+            });
+        }
+
+        function addEventListeners() {
+            document.querySelectorAll('.toggle-category').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-id'));
+                    toggleCategory(categoryId);
+                });
+            });
+
+            document.querySelectorAll('.edit-category-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-id'));
+                    editCategory(categoryId);
+                });
+            });
+
+            document.querySelectorAll('.delete-category-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-id'));
+                    deleteCategory(categoryId);
+                });
+            });
+
+            document.querySelectorAll('.category-title-input').forEach(input => {
+                input.addEventListener('blur', function () {
+                    const categoryId = parseInt(this.getAttribute('data-id'));
+                    saveCategory(categoryId, this.value);
+                });
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.toggle-flavor').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    toggleFlavor(categoryId, flavorId);
+                });
+            });
+
+            document.querySelectorAll('.edit-flavor-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    editFlavor(categoryId, flavorId);
+                });
+            });
+
+            document.querySelectorAll('.delete-flavor-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    deleteFlavor(categoryId, flavorId);
+                });
+            });
+
+            document.querySelectorAll('.add-flavor-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    addFlavor(categoryId);
+                });
+            });
+
+            document.querySelectorAll('.flavor-name-input').forEach(input => {
+                input.addEventListener('blur', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    saveFlavor(categoryId, flavorId, this.value);
+                });
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.screen-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-id'));
+                    const screen = parseInt(this.getAttribute('data-screen'));
+                    changeCategoryScreen(categoryId, screen);
+                });
+            });
+
+            document.querySelectorAll('.vegan-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    toggleVegan(categoryId, flavorId);
+                });
+            });
+
+            document.querySelectorAll('.featured-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const categoryId = parseInt(this.getAttribute('data-cat-id'));
+                    const flavorId = parseInt(this.getAttribute('data-id'));
+                    toggleFeatured(categoryId, flavorId);
+                });
+            });
+        }
+
+        // Funciones de control sin guardar inmediatamente
+        function editCategory(categoryId) {
+            const titleElement = document.querySelector(`.category-title[data-id="${categoryId}"]`);
+            const inputElement = document.querySelector(`.category-title-input[data-id="${categoryId}"]`);
+            titleElement.style.display = 'none';
+            inputElement.style.display = 'block';
+            inputElement.focus();
+            inputElement.select();
+        }
+
+        function saveCategory(categoryId, newName) {
+            if (newName.trim() === '') {
+                alert('El nombre de la categoría no puede estar vacío');
+                renderCategories();
+                return;
+            }
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                category.name = newName.trim();
+                renderCategories();
+            }
+        }
+
+        function deleteCategory(categoryId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category && confirm(`¿Estás seguro de que deseas eliminar la categoría "${category.name}"?`)) {
+                const branch = branches.find(b => b.id === currentBranchId);
+                branch.categories = branch.categories.filter(c => c.id !== categoryId);
+                renderCategories();
+            }
+        }
+
+        function addCategory() {
+            const categories = getCategoriesForCurrentBranch();
+            const newCategoryId = categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+            const newCategory = {
+                id: newCategoryId,
+                name: "Nueva Categoría",
+                enabled: true,
+                screen: 1,
+                flavors: []
+            };
+            const branch = branches.find(b => b.id === currentBranchId);
+            branch.categories.push(newCategory);
+            renderCategories();
+            setTimeout(() => { editCategory(newCategoryId); }, 100);
+        }
+
+        function editFlavor(categoryId, flavorId) {
+            const nameElement = document.querySelector(`.flavor-name-text[data-cat-id="${categoryId}"][data-id="${flavorId}"]`);
+            const inputElement = document.querySelector(`.flavor-name-input[data-cat-id="${categoryId}"][data-id="${flavorId}"]`);
+            nameElement.style.display = 'none';
+            inputElement.style.display = 'inline-block';
+            inputElement.focus();
+            inputElement.select();
+        }
+
+        function saveFlavor(categoryId, flavorId, newName) {
+            if (newName.trim() === '') {
+                alert('El nombre del sabor no puede estar vacío');
+                renderCategories();
+                return;
+            }
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const flavor = category.flavors.find(f => f.id === flavorId);
+                if (flavor) {
+                    flavor.name = newName.trim();
+                    renderCategories();
+                }
+            }
+        }
+
+        function deleteFlavor(categoryId, flavorId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const flavor = category.flavors.find(f => f.id === flavorId);
+                if (flavor && confirm(`¿Estás seguro de que deseas eliminar el sabor "${flavor.name}"?`)) {
+                    category.flavors = category.flavors.filter(f => f.id !== flavorId);
+                    renderCategories();
+                }
+            }
+        }
+
+        function addFlavor(categoryId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const newFlavorId = category.flavors.length > 0 ?
+                    Math.max(...category.flavors.map(f => f.id)) + 1 :
+                    (categoryId * 100) + 1;
+                const newFlavor = {
+                    id: newFlavorId,
+                    name: "Nuevo Sabor",
+                    enabled: true,
+                    vegan: false,
+                    featured: false
+                };
+                category.flavors.push(newFlavor);
+                renderCategories();
+                setTimeout(() => { editFlavor(categoryId, newFlavorId); }, 100);
+            }
+        }
+
+        function toggleCategory(categoryId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                category.enabled = !category.enabled;
+                renderCategories();
+            }
+        }
+
+        function toggleFlavor(categoryId, flavorId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const flavor = category.flavors.find(f => f.id === flavorId);
+                if (flavor) {
+                    flavor.enabled = !flavor.enabled;
+                    renderCategories();
+                }
+            }
+        }
+
+        function changeCategoryScreen(categoryId, screen) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                category.screen = screen;
+                renderCategories();
+            }
+        }
+
+        function toggleVegan(categoryId, flavorId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const flavor = category.flavors.find(f => f.id === flavorId);
+                if (flavor) {
+                    flavor.vegan = !flavor.vegan;
+                    renderCategories();
+                }
+            }
+        }
+
+        function toggleFeatured(categoryId, flavorId) {
+            const categories = getCategoriesForCurrentBranch();
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                const flavor = category.flavors.find(f => f.id === flavorId);
+                if (flavor) {
+                    flavor.featured = !flavor.featured;
+                    renderCategories();
+                }
+            }
+        }
+
+        // Nuevas funciones de control
+        function saveAllChanges() {
+            saveBranches();
+            alert("Cambios guardados con éxito.");
+        }
+
+        function syncChanges() {
+            if (currentBranchId === MAIN_BRANCH_ID) {
+                showSyncModal();
+            } else {
+                alert("La sincronización solo está disponible para la Sucursal Principal.");
+            }
+        }
+
+        function updateSyncButtonVisibility() {
+            const syncButton = document.getElementById('sync-btn');
+            if (currentBranchId === MAIN_BRANCH_ID) {
+                syncButton.style.display = 'block';
+            } else {
+                syncButton.style.display = 'none';
+            }
+        }
+
+        function showSyncModal() {
+            const modal = document.getElementById('syncModal');
+            const branchList = document.getElementById('syncBranchList');
+            branchList.innerHTML = '';
+
+            branches.filter(b => b.id !== MAIN_BRANCH_ID).forEach(branch => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="sync-branch" value="${branch.id}"> ${branch.name}`;
+                branchList.appendChild(label);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function hideSyncModal() {
+            document.getElementById('syncModal').style.display = 'none';
+        }
+
+        function applySyncChanges() {
+            const selectedBranchIds = Array.from(document.querySelectorAll('#syncBranchList input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+
+            const mainBranch = branches.find(b => b.id === MAIN_BRANCH_ID);
+            const mainBranchData = JSON.parse(JSON.stringify(mainBranch.categories));
+
+            selectedBranchIds.forEach(branchId => {
+                const targetBranch = branches.find(b => b.id === branchId);
+                if (targetBranch) {
+                    targetBranch.categories = mainBranchData;
+                }
+            });
+
+            saveBranches();
+            renderCategories();
+            hideSyncModal();
+            alert("Sincronización completada con éxito.");
+        }
+
+
+        // Funciones de sucursal
+        function addBranch() {
+            const newBranchId = branches.length > 0 ? Math.max(...branches.map(b => b.id)) + 1 : 1;
+            const mainBranch = branches.find(b => b.id === MAIN_BRANCH_ID);
+            const newBranchCategories = mainBranch ? JSON.parse(JSON.stringify(mainBranch.categories)) : [];
+            const newBranch = {
+                id: newBranchId,
+                name: `Sucursal Nueva ${newBranchId}`,
+                categories: newBranchCategories
+            };
+            branches.push(newBranch);
+            currentBranchId = newBranchId;
+            saveBranches();
+            renderBranchSelector();
+            renderCategories();
+        }
+
+        function editBranchName() {
+            const branch = branches.find(b => b.id === currentBranchId);
+            if (!branch) return;
+
+            const newName = prompt(`Ingresa el nuevo nombre para la sucursal "${branch.name}":`, branch.name);
+            if (newName !== null && newName.trim() !== '') {
+                branch.name = newName.trim();
+                saveBranches();
+                renderBranchSelector();
+            }
+        }
+
+        function deleteBranch() {
+            if (currentBranchId === MAIN_BRANCH_ID) {
+                alert('La Sucursal Principal no puede ser eliminada.');
+                return;
+            }
+            if (branches.length <= 1) {
+                alert('No puedes eliminar la última sucursal.');
+                return;
+            }
+            const branchToDelete = branches.find(b => b.id === currentBranchId);
+            if (confirm(`¿Estás seguro de que deseas eliminar la sucursal "${branchToDelete.name}" y todos sus datos?`)) {
+                branches = branches.filter(b => b.id !== currentBranchId);
+                currentBranchId = branches[0].id;
+                saveBranches();
+                renderBranchSelector();
+                renderCategories();
+            }
+        }
+
+        function openScreenView(screenNumber) {
+            const screenView = window.open(getUrlForScreen(screenNumber), `ScreenView${currentBranchId}-${screenNumber}`, 'width=1920,height=1080,left=0,top=0');
+            if (!screenView) {
+                alert('Por favor, permite ventanas emergentes para este sitio');
+            }
+        }
+
+        function getUrlForScreen(screenNumber) {
+            return `${window.location.origin}${window.location.pathname}?branch=${currentBranchId}&screen=${screenNumber}`;
+        }
+
+        function copyUrlToClipboard() {
+            const url1 = getUrlForScreen(1);
+            const url2 = getUrlForScreen(2);
+            navigator.clipboard.writeText(`Pantalla 1: ${url1}\nPantalla 2: ${url2}`)
+                .then(() => alert('URLs copiadas al portapapeles:\n' + url1 + '\n' + url2))
+                .catch(err => alert('No se pudo copiar las URLs. Por favor, copia manualmente.'));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBranches();
+
+            const params = new URLSearchParams(window.location.search);
+            const branchParam = parseInt(params.get("branch"));
+            const screenParam = parseInt(params.get("screen"));
+
+            if (branchParam) {
+                const branchExists = branches.some(b => b.id === branchParam);
+                if (!branchExists) {
+                    document.body.innerHTML = '<div style="text-align: center; padding: 50px;">Sucursal no encontrada.</div>';
+                    return;
+                }
+                currentBranchId = branchParam;
+                currentScreenView = screenParam || 1;
+                document.body.innerHTML = `
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            overflow: hidden;
+                            background: linear-gradient(135deg, #f8f4f9, #e6e1f0);
+                            width: 100vw;
+                            height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                        }
+
+                        .main-container {
+                            flex: 1;
+                            padding: 30px;
+                            overflow: hidden;
+                        }
+
+                        .flavors-display {
+                            background: transparent;
+                            border-radius: 0;
+                            padding: 0;
+                            height: 100%;
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                            gap: 0;
+                            align-content: start;
+                        }
+
+                        .flavors-column {
+                            padding: 0 20px;
+                        }
+
+                        .category-header {
+                            font-size: 1.8rem;
+                            font-weight: bold;
+                            color: #5e548e;
+                            margin: 25px 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 3px solid #ff7b9c;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+
+                        .category-header:first-child {
+                            margin-top: 0;
+                        }
+
+                        .category-flavors {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            column-gap: 20px;
+                        }
+
+                        .flavor-item {
+                            padding: 8px 0;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            font-size: 1.1rem;
+                            color: #333;
+                            line-height: 1.4;
+                        }
+
+                        .flavor-name { flex: 1; font-weight: 500; font-size: 1.5rem; }
+
+                        .flavor-icons {
+                            display: flex;
+                            gap: 8px;
+                            flex-shrink: 0;
+                            margin-left: 8px;
+                        }
+
+                        .flavor-icon { font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; }
+                        .vegan-icon { color: #4caf50; }
+                        .featured-icon { color: #ff9800; }
+
+                        .no-content {
+                            grid-column: 1 / -1;
+                            text-align: center;
+                            padding: 60px;
+                            color: #666;
+                            font-size: 1.5rem;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 20px;
+                        }
+                    </style>
+                    <div class="main-container">
+                        <div class="flavors-display" id="flavors-display"></div>
+                    </div>
+                `;
+
+                function renderVisualization() {
+                    const container = document.getElementById('flavors-display');
+                    container.innerHTML = '';
+                    const currentBranch = branches.find(b => b.id === currentBranchId);
+                    if (!currentBranch) return;
+
+                    const screenCategories = currentBranch.categories.filter(cat => cat.screen === currentScreenView && cat.enabled);
+                    if (screenCategories.length === 0) {
+                        container.innerHTML = `
+                            <div class="no-content">
+                                <i class="fas fa-ice-cream" style="font-size: 4rem; color: #ccc;"></i>
+                                <div>No hay categorías activas para esta pantalla</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    screenCategories.forEach(category => {
+                        const activeFlavors = category.flavors.filter(flavor => flavor.enabled);
+                        if (activeFlavors.length === 0) return;
+                        const columnDiv = document.createElement('div');
+                        columnDiv.className = 'flavors-column';
+                        const headerDiv = document.createElement('div');
+                        headerDiv.className = 'category-header';
+                        headerDiv.textContent = category.name;
+                        columnDiv.appendChild(headerDiv);
+                        const flavorsWrapper = document.createElement('div');
+                        flavorsWrapper.className = 'category-flavors';
+                        activeFlavors.forEach(flavor => {
+                            const flavorDiv = document.createElement('div');
+                            flavorDiv.className = 'flavor-item';
+                            flavorDiv.innerHTML = `
+                                <span class="flavor-name">${flavor.name}</span>
+                                <div class="flavor-icons">
+                                    ${flavor.vegan ? '<i class="fas fa-leaf flavor-icon vegan-icon" title="Vegano"></i>' : ''}
+                                    ${flavor.featured ? '<i class="fas fa-star flavor-icon featured-icon" title="Destacado"></i>' : ''}
+                                </div>
+                            `;
+                            flavorsWrapper.appendChild(flavorDiv);
+                        });
+                        columnDiv.appendChild(flavorsWrapper);
+                        container.appendChild(columnDiv);
+                    });
+                }
+
+                renderVisualization();
+
+                setInterval(() => {
+                    const storedBranches = localStorage.getItem('branches');
+                    if (storedBranches) {
+                        const newBranches = JSON.parse(storedBranches);
+                        if (JSON.stringify(newBranches) !== JSON.stringify(branches)) {
+                            branches = newBranches;
+                            renderVisualization();
+                            console.log('Datos actualizados desde localStorage.');
+                        }
+                    }
+                }, 2000);
+            } else {
+                currentBranchId = branches.length > 0 ? branches[0].id : null;
+                renderBranchSelector();
+                renderCategories();
+                document.getElementById('branch-selector').addEventListener('change', function () {
+                    currentBranchId = parseInt(this.value);
+                    renderCategories();
+                });
+                document.getElementById('edit-branch').addEventListener('click', editBranchName);
+                document.getElementById('add-branch').addEventListener('click', addBranch);
+                document.getElementById('delete-branch').addEventListener('click', deleteBranch);
+                document.getElementById('add-category').addEventListener('click', addCategory);
+                document.getElementById('open-screen1').addEventListener('click', () => openScreenView(1));
+                document.getElementById('open-screen2').addEventListener('click', () => openScreenView(2));
+                document.getElementById('copy-url').addEventListener('click', copyUrlToClipboard);
+                document.getElementById('sync-confirm-btn').addEventListener('click', applySyncChanges);
+                document.getElementById('sync-cancel-btn').addEventListener('click', hideSyncModal);
+                document.getElementById('save-btn').addEventListener('click', saveAllChanges);
+                document.getElementById('sync-btn').addEventListener('click', syncChanges);
+
+                document.querySelectorAll('.view-option-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        document.querySelectorAll('.view-option-btn').forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        currentScreenView = parseInt(this.getAttribute('data-screen'));
+                        updateVisualization();
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
