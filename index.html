@@ -1207,7 +1207,15 @@
         }
 
         function distributeToScreens() {
-            alert("La actualización en tiempo real de pantallas en otros dispositivos requiere un servidor.\n\nPara que los cambios se reflejen, primero debes guardar y sincronizar los datos, y luego refrescar (recargar) la página en la pantalla de visualización.");
+            const categoriesToDisplay = getCategoriesForCurrentBranch();
+            const dataToEncode = JSON.stringify(categoriesToDisplay);
+            const encodedData = btoa(encodeURIComponent(dataToEncode));
+            const newUrl = `${window.location.origin}${window.location.pathname}?branch=${currentBranchId}&screen=${currentScreenView}&data=${encodedData}`;
+
+            const screenView = window.open(newUrl, `ScreenView${currentBranchId}-${currentScreenView}`, 'width=1920,height=1080,left=0,top=0');
+            if (!screenView) {
+                alert('Por favor, permite ventanas emergentes para este sitio. Luego, copia la URL de la nueva ventana en tu otra pantalla.');
+            }
         }
 
         function updateButtonsVisibility() {
@@ -1256,9 +1264,8 @@
             saveBranches();
             renderCategories();
             hideSyncModal();
-            alert("Sincronización completada con éxito. Las pantallas se actualizarán automáticamente en la próxima recarga.");
+            alert("Sincronización completada con éxito.");
         }
-
 
         // Funciones de sucursal
         function addBranch() {
@@ -1333,13 +1340,29 @@
             const params = new URLSearchParams(window.location.search);
             const branchParam = parseInt(params.get("branch"));
             const screenParam = parseInt(params.get("screen"));
+            const dataParam = params.get("data");
 
             if (branchParam) {
-                const branchExists = branches.some(b => b.id === branchParam);
-                if (!branchExists) {
-                    document.body.innerHTML = '<div style="text-align: center; padding: 50px;">Sucursal no encontrada.</div>';
-                    return;
+                let dataToRender = [];
+                if (dataParam) {
+                    try {
+                        const decodedData = decodeURIComponent(atob(dataParam));
+                        dataToRender = JSON.parse(decodedData);
+                    } catch (e) {
+                        console.error("Error al decodificar los datos de la URL:", e);
+                        document.body.innerHTML = '<div style="text-align: center; padding: 50px;">Datos de pantalla no válidos.</div>';
+                        return;
+                    }
+                } else {
+                    const branchExists = branches.some(b => b.id === branchParam);
+                    if (!branchExists) {
+                        document.body.innerHTML = '<div style="text-align: center; padding: 50px;">Sucursal no encontrada.</div>';
+                        return;
+                    }
+                    const currentBranch = branches.find(b => b.id === branchParam);
+                    dataToRender = currentBranch.categories;
                 }
+
                 currentBranchId = branchParam;
                 currentScreenView = screenParam || 1;
                 document.body.innerHTML = `
@@ -1437,13 +1460,11 @@
                     </div>
                 `;
 
-                function renderVisualization() {
+                function renderVisualizationScreen(data) {
                     const container = document.getElementById('flavors-display');
                     container.innerHTML = '';
-                    const currentBranch = branches.find(b => b.id === currentBranchId);
-                    if (!currentBranch) return;
 
-                    const screenCategories = currentBranch.categories.filter(cat => cat.screen === currentScreenView && cat.enabled);
+                    const screenCategories = data.filter(cat => cat.screen === currentScreenView && cat.enabled);
                     if (screenCategories.length === 0) {
                         container.innerHTML = `
                             <div class="no-content">
@@ -1480,20 +1501,8 @@
                         container.appendChild(columnDiv);
                     });
                 }
+                renderVisualizationScreen(dataToRender);
 
-                renderVisualization();
-
-                setInterval(() => {
-                    const storedBranches = localStorage.getItem('branches');
-                    if (storedBranches) {
-                        const newBranches = JSON.parse(storedBranches);
-                        if (JSON.stringify(newBranches) !== JSON.stringify(branches)) {
-                            branches = newBranches;
-                            renderVisualization();
-                            console.log('Datos actualizados desde localStorage.');
-                        }
-                    }
-                }, 2000);
             } else {
                 currentBranchId = branches.length > 0 ? branches[0].id : null;
                 renderBranchSelector();
