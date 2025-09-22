@@ -617,7 +617,7 @@
             background-color: #4CAF50;
             color: white;
         }
-        
+
         .sync-btn {
             background-color: #2196F3;
             color: white;
@@ -663,10 +663,10 @@
                     style="background: var(--primary-color); color: white; width: 100%; margin-top: 20px;">
                     <i class="fas fa-plus"></i> Agregar Categoría
                 </button>
-                
+
                 <div class="action-buttons">
                     <button id="save-btn" class="save-btn"><i class="fas fa-save"></i> Guardar</button>
-                    <button id="sync-btn" class="sync-btn" style="display: none;"><i class="fas fa-sync-alt"></i> Sincronizar</button>
+                    <button id="sync-btn" class="sync-btn" style="display: none;"><i class="fas fa-sync-alt"></i> Distribuir contenido a pantallas</button>
                 </div>
             </div>
 
@@ -685,7 +685,7 @@
 
     <div id="syncModal" class="modal">
         <div class="modal-content">
-            <h3>Sincronizar con otras sucursales</h3>
+            <h3>Distribuir a otras sucursales</h3>
             <p>Selecciona las sucursales para aplicar los cambios de la sucursal principal:</p>
             <div id="syncBranchList" class="branch-list">
                 </div>
@@ -1196,7 +1196,7 @@
             if (currentBranchId === MAIN_BRANCH_ID) {
                 showSyncModal();
             } else {
-                alert("La sincronización solo está disponible para la Sucursal Principal.");
+                alert("La distribución solo está disponible para la Sucursal Principal.");
             }
         }
 
@@ -1243,7 +1243,7 @@
             saveBranches();
             renderCategories();
             hideSyncModal();
-            alert("Sincronización completada con éxito.");
+            alert("Distribución completada con éxito.");
         }
 
 
