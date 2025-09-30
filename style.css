@@ -5,7 +5,7 @@
     --color-texto-normal: #333333;
     --color-categoria: #4CAF50;
     --fuente-general: Arial, sans-serif;
-    --tamano-base-vw: 0.9vw;
+    --tamano-base-vw: 1.5vw;
 }
 
 /* --- BASE GENERAL PARA CARTELERÍA DIGITAL (NO SCROLL) --- */
@@ -121,3 +121,4 @@ html, body {
 /* Limpieza de estilos viejos */
 .seleccionado-tag { display: none !important; }
 .loading-message { text-align: center; color: orange; margin-top: 50px; }
+
