@@ -1,0 +1,113 @@
+/* --- BASE GENERAL PARA CARTELERÍA DIGITAL (NO SCROLL) --- */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* EVITA EL SCROLL */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+#sabores-menu {
+    max-width: 95%; /* Ajusta el ancho para el contenedor */
+    height: 100%;
+    margin: 0 auto;
+    padding: 20px 0;
+    box-sizing: border-box;
+    /* Usa unidades de viewport para que la fuente se escale con la pantalla */
+    font-size: 0.9vw; 
+}
+
+/* --- DISEÑO DE COLUMNAS PRINCIPALES --- */
+.menu-container {
+    height: calc(100% - 40px); /* Usa la altura disponible */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+/* --- AJUSTE DE COLUMNAS DENTRO DE CADA CATEGORÍA (LISTAS LARGAS) --- */
+.sabores-grid {
+    display: block; 
+    /* Divide la lista de sabores en 2 columnas si el contenido es demasiado alto */
+    column-count: 2; 
+    column-gap: 30px; 
+    /* Es crucial para evitar que el contenido se rompa entre las sub-columnas */
+    break-inside: avoid;
+}
+
+.categoria {
+    break-inside: avoid; /* Evita que el título de categoría se rompa */
+    margin-bottom: 20px; 
+}
+
+.categoria h2 {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #4CAF50; 
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 5px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.sabor-item {
+    break-inside: avoid; /* Evita que un sabor se corte entre columnas */
+    page-break-inside: avoid; 
+    font-size: 1.4em; 
+    padding: 3px 0; 
+    border-bottom: 1px dotted #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sabor-nombre {
+    flex-grow: 1;
+    font-weight: normal;
+}
+
+/* --- ESTILOS DE ETIQUETAS Y REFERENCIAS --- */
+
+.referencias-box-clean {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    margin-bottom: 30px; 
+    border-radius: 5px;
+}
+
+.referencias-box-clean p {
+    margin: 5px 0;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+}
+
+.sintacc-tag {
+    /* Símbolo para Sin TACC */
+    font-size: 1.3em;
+    color: #a0522d; 
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.vegano-tag {
+    /* Símbolo para Vegano */
+    font-size: 1.3em;
+    color: #4CAF50; 
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Ocultar el punto azul de versiones anteriores */
+.seleccionado-tag {
+    display: none !important;
+}
+
+.loading-message {
+    text-align: center;
+    color: orange;
+    margin-top: 50px;
+}
