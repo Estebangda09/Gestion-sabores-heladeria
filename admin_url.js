@@ -1,26 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ⚠️ Archivo de destino (menú de sabores) ⚠️
-    const RUTA_MENU = 'index.html'; 
+    // ⚠️ CORRECCIÓN CLAVE: El archivo de destino es ahora menu.html ⚠️
+    const RUTA_MENU = 'menu.html'; 
     
     // URL de tu Google Sheet publicado como CSV
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS096sKyd8yEnxylv0Ze__LocfEUvd2YM7NG375v5IBLLe9aElstkRSoxE0xBpnzVkoJppXZEBtsY51/pub?output=csv';
     
     const generatorDiv = document.getElementById('url-generator');
     
-    // --- Lógica para calcular la URL Base CORRECTA (Apuntando a index.html) ---
-    // 1. Obtiene la URL completa actual (ej: http://127.0.0.1:5500/admin_url.html)
+    // --- Lógica para calcular la URL Base CORRECTA (Apuntando a menu.html) ---
     let fullPath = window.location.href;
     
-    // 2. Reemplaza el nombre del archivo actual ('admin_url.html') por el nombre del archivo de menú ('index.html').
-    let BASE_URL = fullPath.replace(new RegExp(window.location.pathname.split('/').pop() + '$'), RUTA_MENU);
+    // Esto asegura que la URL generada apunte a menu.html
+    let BASE_URL = fullPath.endsWith('/') 
+        ? fullPath + RUTA_MENU 
+        : fullPath.replace(new RegExp(window.location.pathname.split('/').pop() + '$'), RUTA_MENU);
     
-    document.getElementById('base-url-display').textContent = BASE_URL;
+    // Asume que tienes un elemento para mostrar la base de la URL en tu HTML de administrador
+    const baseUrlDisplay = document.getElementById('base-url-display');
+    if (baseUrlDisplay) {
+        baseUrlDisplay.textContent = BASE_URL;
+    }
     // -------------------------------------------------
 
     fetch(csvUrl)
         .then(response => response.text())
         .then(csvText => {
-            document.getElementById('loading').style.display = 'none';
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.style.display = 'none';
             
             // Solo necesitamos la primera línea para los encabezados
             const headers = csvText.trim().split('\n')[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -44,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         })
         .catch(error => {
-            document.getElementById('loading').innerHTML = 'Error al cargar los encabezados del Sheet.';
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.innerHTML = 'Error al cargar los encabezados del Sheet.';
             console.error('Error fetching CSV:', error);
         });
 });
