@@ -1,59 +1,79 @@
+/* --- VARIABLES CSS (Controladas desde Google Sheets) --- */
+:root {
+    /* Estas variables se definen y actualizan por script.js al cargar la configuración */
+    --color-fondo: #f4f4f4;
+    --color-texto-normal: #333333;
+    --color-categoria: #4CAF50;
+    --fuente-general: Arial, sans-serif;
+    --tamano-base-vw: 0.9vw;
+}
+
 /* --- BASE GENERAL PARA CARTELERÍA DIGITAL (NO SCROLL) --- */
 html, body {
     height: 100%;
     margin: 0;
     overflow: hidden; /* EVITA EL SCROLL */
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    /* Usa las variables dinámicas */
+    font-family: var(--fuente-general); 
+    background-color: var(--color-fondo); 
+    color: var(--color-texto-normal); 
 }
 
 #sabores-menu {
-    max-width: 95%; /* Ajusta el ancho para el contenedor */
+    max-width: 95%; 
     height: 100%;
     margin: 0 auto;
     padding: 20px 0;
     box-sizing: border-box;
-    /* Usa unidades de viewport para que la fuente se escale con la pantalla */
-    font-size: 0.9vw; 
+    font-size: var(--tamano-base-vw); /* Usa la variable dinámica */
 }
 
 /* --- DISEÑO DE COLUMNAS PRINCIPALES --- */
 .menu-container {
-    height: calc(100% - 40px); /* Usa la altura disponible */
+    height: calc(100% - 40px); 
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
 }
 
-/* --- AJUSTE DE COLUMNAS DENTRO DE CADA CATEGORÍA (LISTAS LARGAS) --- */
-.sabores-grid {
-    display: block; 
-    /* Divide la lista de sabores en 2 columnas si el contenido es demasiado alto */
-    column-count: 2; 
-    column-gap: 30px; 
-    /* Es crucial para evitar que el contenido se rompa entre las sub-columnas */
-    break-inside: avoid;
+/* --- TÍTULOS DE CATEGORÍA CON EFECTO DE COLOR PULSANTE (TITILEO SUTIL) --- */
+
+/* 1. Definición del efecto de PULSO DE COLOR */
+@keyframes colorPulse {
+    0% { color: var(--color-categoria); } /* Color normal (desde Config) */
+    50% { color: #ff9900; } /* Color de atención (Naranja) */
+    100% { color: var(--color-categoria); }
 }
 
 .categoria {
-    break-inside: avoid; /* Evita que el título de categoría se rompa */
+    break-inside: avoid; 
     margin-bottom: 20px; 
 }
 
 .categoria h2 {
     font-size: 2.2em;
     font-weight: bold;
-    color: #4CAF50; 
+    color: var(--color-categoria); /* Estilo dinámico */
     border-bottom: 2px solid #ccc;
     padding-bottom: 5px;
     margin-top: 30px;
     margin-bottom: 15px;
     text-transform: uppercase;
+    
+    /* 2. Aplica la animación de pulso */
+    animation: colorPulse 3s infinite alternate; /* 3 segundos, se repite, alternando dirección */
+}
+
+/* --- AJUSTE DE COLUMNAS DENTRO DE CADA CATEGORÍA (LISTAS LARGAS) --- */
+.sabores-grid {
+    display: block; 
+    column-count: 2; /* Divide la lista en 2 sub-columnas */
+    column-gap: 30px; 
+    break-inside: avoid;
 }
 
 .sabor-item {
-    break-inside: avoid; /* Evita que un sabor se corte entre columnas */
+    break-inside: avoid; 
     page-break-inside: avoid; 
     font-size: 1.4em; 
     padding: 3px 0; 
@@ -69,7 +89,6 @@ html, body {
 }
 
 /* --- ESTILOS DE ETIQUETAS Y REFERENCIAS --- */
-
 .referencias-box-clean {
     padding: 10px;
     border: 1px solid #e0e0e0;
@@ -86,28 +105,19 @@ html, body {
 }
 
 .sintacc-tag {
-    /* Símbolo para Sin TACC */
     font-size: 1.3em;
-    color: #a0522d; 
+    color: #a0522d; /* Marrón */
     font-weight: bold;
     margin-left: 5px;
 }
 
 .vegano-tag {
-    /* Símbolo para Vegano */
     font-size: 1.3em;
-    color: #4CAF50; 
+    color: #4CAF50; /* Verde */
     font-weight: bold;
     margin-left: 5px;
 }
 
-/* Ocultar el punto azul de versiones anteriores */
-.seleccionado-tag {
-    display: none !important;
-}
-
-.loading-message {
-    text-align: center;
-    color: orange;
-    margin-top: 50px;
-}
+/* Limpieza de estilos viejos */
+.seleccionado-tag { display: none !important; }
+.loading-message { text-align: center; color: orange; margin-top: 50px; }
