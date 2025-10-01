@@ -4,16 +4,15 @@
     --color-fondo: #f4f4f4;
     --color-texto-normal: #333333;
     --color-categoria: #4CAF50;
-    --fuente-general: Arial, sans-serif;
-    --tamano-base-vw: 1.5vw;
+    --fuente-general: 'Playfair Display', serif;
+    --tamano-base-vw: 3.0vw;
 }
 
 /* --- BASE GENERAL PARA CARTELERÍA DIGITAL (NO SCROLL) --- */
 html, body {
     height: 100%;
     margin: 0;
-    overflow: hidden; /* EVITA EL SCROLL */
-    /* Usa las variables dinámicas */
+    overflow: hidden; 
     font-family: var(--fuente-general); 
     background-color: var(--color-fondo); 
     color: var(--color-texto-normal); 
@@ -121,4 +120,5 @@ html, body {
 /* Limpieza de estilos viejos */
 .seleccionado-tag { display: none !important; }
 .loading-message { text-align: center; color: orange; margin-top: 50px; }
+
 
