@@ -14,6 +14,7 @@ html, body {
     margin: 0;
     overflow: hidden; 
     font-family: var(--fuente-general); 
+    font-family: Playfair Display, serif;
     background-color: var(--color-fondo); 
     color: var(--color-texto-normal); 
 }
