@@ -24,8 +24,8 @@ html, body {
     margin: 0 auto;
     padding: 20px 0;
     box-sizing: border-box;
-    /*font-size: var(--tamano-base-vw); /* Usa la variable dinámica */
-    font-size:1.5vw
+    font-size: var(--tamano-base-vw); /* Usa la variable dinámica */
+ 
 }
 
 /* --- DISEÑO DE COLUMNAS PRINCIPALES --- */
@@ -121,6 +121,7 @@ html, body {
 /* Limpieza de estilos viejos */
 .seleccionado-tag { display: none !important; }
 .loading-message { text-align: center; color: orange; margin-top: 50px; }
+
 
 
 
