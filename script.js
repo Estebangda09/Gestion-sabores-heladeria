@@ -129,10 +129,7 @@ function renderizarMenu(container, sucursal, pantalla, grupos) {
             <div>
                 ${col2Html}
                 
-                <div class="referencias-box-clean">
-                    <p><span class="vegano-tag">🌱</span> Vegano</p>
-                    <p><span class="sintacc-tag">◎</span> Sin TACC</p>
-                </div>
+                
             </div>
         </div>
     `;
@@ -164,3 +161,4 @@ function crearSeccionCategoria(categoria, sabores) {
     html += `</div></section>`;
     return html;
 }
+
