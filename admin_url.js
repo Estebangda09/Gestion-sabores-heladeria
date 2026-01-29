@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const RUTA_MENU = 'menu.html'; 
-   
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS096sKyd8yEnxylv0Ze__LocfEUvd2YM7NG375v5IBLLe9aElstkRSoxE0xBpnzVkoJppXZEBtsY51/pub?output=csv';
     
     const generatorDiv = document.getElementById('url-generator');
+    const btnApply = document.getElementById('btn-apply-changes'); 
     
     // Cálculo de URL base
     let fullPath = window.location.href;
@@ -11,22 +11,45 @@ document.addEventListener('DOMContentLoaded', () => {
         ? fullPath + RUTA_MENU 
         : fullPath.replace(new RegExp(window.location.pathname.split('/').pop() + '$'), RUTA_MENU);
     
-    // Variables para guardar datos y no recargar el CSV cada vez que cambias un color
+    // Variables caché
     let cachedSucursales = [];
     let cachedPantallas = [];
 
-    // --- ESCUCHA DE CAMBIOS EN EL PANEL ---
+    // --- FUNCIÓN CENTRAL DE ACTUALIZACIÓN ---
+    const ejecutarActualizacion = () => {
+        if (cachedSucursales.length > 0) {
+            renderUrlGenerator(generatorDiv, cachedSucursales, cachedPantallas, BASE_URL);
+            
+            // Feedback visual: Cambiar texto del botón brevemente
+            const originalText = btnApply.textContent;
+            btnApply.textContent = '✅ ¡URLs Actualizadas!';
+            setTimeout(() => {
+                btnApply.textContent = originalText;
+            }, 1500);
+        } else {
+            alert("Aún no se han cargado los datos del Sheet.");
+        }
+    };
+
+    // 1. Escuchar clic en el botón "Aplicar Cambios"
+    if (btnApply) {
+        btnApply.addEventListener('click', (e) => {
+            e.preventDefault();
+            ejecutarActualizacion();
+        });
+    }
+
+    // 2. (Opcional) Mantener actualización automática al cambiar inputs
+    // Si prefieres que SOLO sea con el botón, borra este bloque.
+    // Yo recomiendo dejarlo para que sea fluido.
     const inputsConfig = document.querySelectorAll('.config-panel input, .config-panel select');
     inputsConfig.forEach(input => {
-        input.addEventListener('input', () => {
-            // Si ya tenemos datos, regeneramos las URLs con los nuevos colores/tamaños
-            if (cachedSucursales.length > 0) {
-                renderUrlGenerator(generatorDiv, cachedSucursales, cachedPantallas, BASE_URL);
-            }
+        input.addEventListener('change', () => { // Usamos 'change' en vez de 'input' para no saturar
+            ejecutarActualizacion();
         });
     });
 
-    // --- CARGA INICIAL DEL CSV ---
+    // --- CARGA INICIAL ---
     fetch(csvUrl)
         .then(response => response.text())
         .then(csvText => {
@@ -48,32 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Guardar en caché
             cachedSucursales = sucursales;
             cachedPantallas = pantallas;
 
-            // Renderizar por primera vez
+            // Renderizado inicial
             renderUrlGenerator(generatorDiv, sucursales, pantallas, BASE_URL);
-
         })
         .catch(error => {
+            console.error(error);
             const loadingElement = document.getElementById('loading');
-            if (loadingElement) loadingElement.innerHTML = 'Error al cargar los encabezados del Sheet.';
-            console.error('Error fetching CSV:', error);
+            if(loadingElement) loadingElement.textContent = "Error al cargar datos.";
         });
 });
 
-
-/**
- * Construye la interfaz y las URLs con parámetros de diseño.
- */
 function renderUrlGenerator(container, sucursales, pantallas, baseUrl) {
-    if (sucursales.length === 0 || pantallas.length === 0) {
-        container.innerHTML = '<p style="color:red;">No se encontraron columnas de Sucursales o Pantallas.</p>';
-        return;
-    }
+    if (sucursales.length === 0) return;
 
-    // 1. OBTENER VALORES DE CONFIGURACIÓN DEL DOM
+    // Obtener valores del DOM
     const isTransparent = document.getElementById('conf-bg-transparent').checked;
     const bgColor = isTransparent ? 'transparent' : document.getElementById('conf-bg-color').value.replace('#', '');
     const titleColor = document.getElementById('conf-title-color').value.replace('#', '');
@@ -85,15 +99,14 @@ function renderUrlGenerator(container, sucursales, pantallas, baseUrl) {
     let html = '';
 
     sucursales.forEach(sucursalNum => {
+        // Agregamos clase 'updated-flash' para animación
         html += `
-        <div class="sucursal-section">
+        <div class="sucursal-section updated-flash"> 
             <h2>Sucursal ${sucursalNum}</h2>
             <div class="pantallas-grid">
         `;
         
         pantallas.forEach(pantallaNum => {
-            // 2. CONSTRUIR URL CON PARÁMETROS
-       
             let finalUrl = `${baseUrl}?sucursal=${sucursalNum}&pantalla=${pantallaNum}`;
             finalUrl += `&bg=${bgColor}`;
             finalUrl += `&tc=${titleColor}`;
@@ -106,7 +119,6 @@ function renderUrlGenerator(container, sucursales, pantallas, baseUrl) {
             <div class="url-box">
                 <p>Pantalla ${pantallaNum}</p>
                 <input type="text" class="url-input" value="${finalUrl}" readonly onclick="this.select();">
-                
                 <div style="display: flex; gap: 10px;">
                     <button class="copy-btn" data-url="${finalUrl}">Copiar URL</button>
                     <a href="${finalUrl}" target="_blank" class="copy-btn" style="background-color: #007bff; text-decoration: none; text-align: center;">Abrir</a>
@@ -114,13 +126,12 @@ function renderUrlGenerator(container, sucursales, pantallas, baseUrl) {
             </div>
             `;
         });
-
         html += `</div></div>`;
     });
 
     container.innerHTML = html;
     
-    // Eventos de Copiar
+    // Reasignar eventos de botones
     document.querySelectorAll('.copy-btn').forEach(button => {
         if (button.tagName === 'BUTTON') {
             button.addEventListener('click', (e) => {
@@ -133,13 +144,8 @@ function renderUrlGenerator(container, sucursales, pantallas, baseUrl) {
 
 function copiarAlPortapapeles(texto, boton) {
     navigator.clipboard.writeText(texto).then(() => {
-        const textoOriginal = boton.textContent;
+        const originalText = boton.textContent;
         boton.textContent = '¡Copiado!';
-        setTimeout(() => {
-            boton.textContent = textoOriginal;
-        }, 1500);
-    }).catch(err => {
-        console.error('Error al copiar:', err);
-        alert('Error al copiar. Hazlo manualmente.');
+        setTimeout(() => boton.textContent = originalText, 1500);
     });
 }
