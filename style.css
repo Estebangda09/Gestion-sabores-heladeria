@@ -1,20 +1,17 @@
-/* --- VARIABLES CSS (Controladas desde Google Sheets) --- */
+
 :root {
-    /* Estas variables se definen y actualizan por script.js al cargar la configuración */
     --color-fondo: #f4f4f4;
     --color-texto-normal: #333333;
     --color-categoria: #4CAF50;
     --fuente-general: 'Playfair Display', serif;
-    --tamano-base-vw: 3.0vw;
 }
 
-/* --- BASE GENERAL PARA CARTELERÍA DIGITAL (NO SCROLL) --- */
+/* --- BASE GENERAL --- */
 html, body {
     height: 100%;
     margin: 0;
     overflow: hidden; 
     font-family: var(--fuente-general); 
-    font-family: Playfair Display, serif;
     background-color: var(--color-fondo); 
     color: var(--color-texto-normal); 
 }
@@ -25,11 +22,10 @@ html, body {
     margin: 0 auto;
     padding: 20px 0;
     box-sizing: border-box;
-    /*font-size: var(--tamano-base-vw); /* Usa la variable dinámica */
-     font-size: 1.5vw;
+  
 }
 
-/* --- DISEÑO DE COLUMNAS PRINCIPALES --- */
+/* --- DISEÑO DE COLUMNAS --- */
 .menu-container {
     height: calc(100% - 40px); 
     display: grid;
@@ -37,38 +33,29 @@ html, body {
     gap: 40px;
 }
 
-/* --- TÍTULOS DE CATEGORÍA CON EFECTO DE COLOR PULSANTE (TITILEO SUTIL) --- */
-
-/* 1. Definición del efecto de PULSO DE COLOR */
-@keyframes colorPulse {
-    0% { color: var(--color-categoria); } /* Color normal (desde Config) */
-    50% { color: #ff9900; } /* Color de atención (Naranja) */
-    100% { color: var(--color-categoria); }
-}
-
+/* --- TÍTULOS DE CATEGORÍA --- */
 .categoria {
     break-inside: avoid; 
     margin-bottom: 20px; 
 }
 
 .categoria h2 {
-    font-size: 2.2em;
+    /* TAMAÑO y COLOR controlados por variables/JS */
     font-weight: bold;
-    color: var(--color-categoria); /* Estilo dinámico */
+    color: var(--color-categoria); 
     border-bottom: 2px solid #ccc;
     padding-bottom: 5px;
     margin-top: 30px;
     margin-bottom: 15px;
     text-transform: uppercase;
     
-    /* 2. Aplica la animación de pulso */
-    animation: colorPulse 3s infinite alternate; /* 3 segundos, se repite, alternando dirección */
+  
 }
 
-/* --- AJUSTE DE COLUMNAS DENTRO DE CADA CATEGORÍA (LISTAS LARGAS) --- */
+/* --- GRID DE SABORES --- */
 .sabores-grid {
     display: block; 
-    column-count: 2; /* Divide la lista en 2 sub-columnas */
+    column-count: 2; 
     column-gap: 30px; 
     break-inside: avoid;
 }
@@ -76,12 +63,13 @@ html, body {
 .sabor-item {
     break-inside: avoid; 
     page-break-inside: avoid; 
-    font-size: 1.4em; 
     padding: 3px 0; 
     border-bottom: 1px dotted #ddd;
     display: flex;
     align-items: center;
     justify-content: space-between;
+  
+    color: var(--color-texto-normal);
 }
 
 .sabor-nombre {
@@ -89,46 +77,19 @@ html, body {
     font-weight: normal;
 }
 
-/* --- ESTILOS DE ETIQUETAS Y REFERENCIAS --- */
-.referencias-box-clean {
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    background-color: #ffffff;
-    margin-bottom: 30px; 
-    border-radius: 5px;
-}
-
-.referencias-box-clean p {
-    margin: 5px 0;
-    font-size: 1.2em;
-    display: flex;
-    align-items: center;
-}
-
+/* --- ETIQUETAS --- */
 .sintacc-tag {
-    font-size: 1.3em;
-    color: #a0522d; /* Marrón */
+    font-size: 0.8em;
+    color: #a0522d;
     font-weight: bold;
     margin-left: 5px;
 }
 
 .vegano-tag {
-    font-size: 1.3em;
-    color: #4CAF50; /* Verde */
+    font-size: 0.8em;
+    color: #4CAF50;
     font-weight: bold;
     margin-left: 5px;
 }
 
-/* Limpieza de estilos viejos */
-.seleccionado-tag { display: none !important; }
 .loading-message { text-align: center; color: orange; margin-top: 50px; }
-
-
-
-
-
-
-
-
-
-
