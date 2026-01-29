@@ -151,3 +151,38 @@ a.copy-btn {
 a.copy-btn:hover {
     background-color: #2563eb !important;
 }
+
+/* --- Estilo para el botón de Acción Principal --- */
+.action-btn {
+    background-color: #2563eb; /* Azul fuerte */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+/* Animación para indicar actualización */
+@keyframes flashUpdate {
+    0% { background-color: #dcfce7; }
+    100% { background-color: #ffffff; }
+}
+
+.updated-flash {
+    animation: flashUpdate 1s ease-out;
+}
+
