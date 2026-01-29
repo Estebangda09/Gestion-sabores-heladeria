@@ -1,5 +1,6 @@
-// ⚠️ MODIFICA ESTAS URLs con las publicadas por separado ⚠️
+// URLs del Sheet
 const CSV_URL_MENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS096sKyd8yEnxylv0Ze__LocfEUvd2YM7NG375v5IBLLe9aElstkRSoxE0xBpnzVkoJppXZEBtsY51/pub?gid=0&single=true&output=csv';
+//  respaldo, pero la URL tiene prioridad
 const CSV_URL_CONFIG = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS096sKyd8yEnxylv0Ze__LocfEUvd2YM7NG375v5IBLLe9aElstkRSoxE0xBpnzVkoJppXZEBtsY51/pub?gid=1614228917&single=true&output=csv';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,50 +15,62 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // 1. Cargar Configuración primero
-    Papa.parse(CSV_URL_CONFIG, {
-        download: true,
-        header: true,
-        complete: function(configResults) {
-            const configMap = {};
-            configResults.data.forEach(row => {
-                if (row.CLAVE && row.VALOR) {
-                    configMap[row.CLAVE.trim()] = row.VALOR.trim(); 
-                }
-            });
+    // 1. APLICAR ESTILOS DESDE URL 
+    aplicarEstilosDesdeURL(urlParams);
 
-            // 2. Aplicar estilos dinámicamente
-            aplicarEstilosDinamicos(configMap);
-            
-            // 3. Cargar el Menú
-            cargarMenu(configMap, sucursalNum, pantallaNum);
-        },
-        error: function(error) {
-            contentDiv.innerHTML = '<h1>Error Fatal</h1><h2 class="loading-message" style="color: red;">No se pudo cargar la Configuración de Estilos.</h2>';
-            console.error('Error de Papaparse al cargar Config:', error);
-        }
-    });
-
-    // 4. Configurar recarga automática (se inicia solo una vez)
+    // 2. Cargar el Menú directamente
+  
+    cargarMenu(null, sucursalNum, pantallaNum); 
+    
+    // 3. Recarga automática (5 min)
     setTimeout(function() {
         window.location.reload(true); 
-    }, 300 * 1000); // 5 minutos
+    }, 300 * 1000); 
 });
 
-// --- FUNCIONES DE ESTILOS ---
-
-function aplicarEstilosDinamicos(config) {
+// --- NUEVA FUNCIÓN: ESTILOS DESDE URL ---
+function aplicarEstilosDesdeURL(params) {
     const root = document.documentElement.style;
+
+    // Helper para agregar # si no es "transparent"
+    const getColor = (val, def) => {
+        if (!val) return def;
+        if (val === 'transparent') return 'transparent';
+        return '#' + val;
+    };
+
+    // Lectura de parámetros (coinciden con admin_url.js)
+    const bg = getColor(params.get('bg'), '#f4f4f4');
+    const titleColor = getColor(params.get('tc'), '#4CAF50');
+    const textColor = getColor(params.get('txtc'), '#333333');
+    const fontFamily = params.get('font') ? decodeURIComponent(params.get('font')) : "'Playfair Display', serif";
     
-    // Asigna las variables CSS
-    root.setProperty('--color-fondo', config.color_fondo || '#f4f4f4');
-    root.setProperty('--color-texto-normal', config.color_texto_normal || '#333333');
-    root.setProperty('--color-categoria', config.color_categoria || '#4CAF50');
-    root.setProperty('--fuente-general', config.fuente_general || 'Arial, sans-serif');
-    root.setProperty('--tamano-base-vw', config.tamano_base_vw || '0.9vw');
+    // Tamaños
+    const titleSize = params.get('ts') ? params.get('ts') + 'px' : null;
+    const textSize = params.get('txts') ? params.get('txts') + 'px' : null;
+
+    // Asignación de variables CSS
+    root.setProperty('--color-fondo', bg);
+    root.setProperty('--color-categoria', titleColor);
+    root.setProperty('--color-texto-normal', textColor);
+    root.setProperty('--fuente-general', fontFamily);
+    
+    // Inyección de estilos para tamaños (más fuerte que las variables a veces)
+    const styleSheet = document.createElement("style");
+    let cssOverride = '';
+
+    if (titleSize) {
+        cssOverride += `.categoria h2 { font-size: ${titleSize} !important; } `;
+    }
+    if (textSize) {
+        cssOverride += `.sabor-item { font-size: ${textSize} !important; } `;
+    }
+    
+    styleSheet.innerText = cssOverride;
+    document.head.appendChild(styleSheet);
 }
 
-// --- FUNCIONES DE CARGA Y RENDERIZADO ---
+// --- FUNCIONES DE CARGA Y RENDERIZADO (Sin cambios mayores) ---
 
 function cargarMenu(config, sucursalNum, pantallaNum) {
     const contentDiv = document.getElementById('sabores-menu');
@@ -74,11 +87,11 @@ function cargarMenu(config, sucursalNum, pantallaNum) {
             const data = results.data;
 
             if (data.length === 0) {
-                contentDiv.innerHTML = '<h1>Error de Datos</h1><h2 class="loading-message" style="color: red;">El archivo CSV de Menú está vacío o el formato es incorrecto.</h2>';
+                contentDiv.innerHTML = '<h1>Error de Datos</h1><h2 class="loading-message" style="color: red;">CSV vacío.</h2>';
                 return;
             }
             
-            // Lógica de filtrado
+            // Filtrado
             const saboresFiltrados = data.filter(item => {
                 const activoSucursal = item[columnaSucursal] && item[columnaSucursal].trim().match(regexSi);
                 const activoPantalla = item[columnaPantalla] && item[columnaPantalla].trim().match(regexSi);
@@ -86,7 +99,7 @@ function cargarMenu(config, sucursalNum, pantallaNum) {
             });
 
             if (saboresFiltrados.length === 0) {
-                contentDiv.innerHTML = `<h1>Menú</h1><h2 class="loading-message" style="color: orange;">No hay sabores activos para esta pantalla/sucursal.</h2>`;
+                contentDiv.innerHTML = `<h1>Menú</h1><h2 class="loading-message" style="color: orange;">Sin sabores activos.</h2>`;
                 return;
             }
 
@@ -94,8 +107,8 @@ function cargarMenu(config, sucursalNum, pantallaNum) {
             renderizarMenu(contentDiv, sucursalNum, pantallaNum, saboresAgrupados);
         },
         error: function(error) {
-            contentDiv.innerHTML = '<h1>Error Fatal</h1><h2 class="loading-message" style="color: red;">No se pudo cargar el Menú. Verifique la URL y la red.</h2>';
-            console.error('Error de Papaparse al cargar Menú:', error);
+            contentDiv.innerHTML = '<h1>Error Fatal</h1>';
+            console.error('Error:', error);
         }
     });
 }
@@ -115,22 +128,20 @@ function renderizarMenu(container, sucursal, pantalla, grupos) {
     let html = ''; 
     const categorias = Object.keys(grupos).sort();
     const mitad = Math.ceil(categorias.length / 2);
-    const categoriasColumna1 = categorias.slice(0, mitad);
-    const categoriasColumna2 = categorias.slice(mitad);
+    
+    // Dividir en columnas
+    const col1 = categorias.slice(0, mitad);
+    const col2 = categorias.slice(mitad);
 
     let col1Html = '';
-    categoriasColumna1.forEach(categoria => { col1Html += crearSeccionCategoria(categoria, grupos[categoria]); });
+    col1.forEach(cat => { col1Html += crearSeccionCategoria(cat, grupos[cat]); });
     let col2Html = '';
-    categoriasColumna2.forEach(categoria => { col2Html += crearSeccionCategoria(categoria, grupos[categoria]); });
+    col2.forEach(cat => { col2Html += crearSeccionCategoria(cat, grupos[cat]); });
     
     html += `
         <div class="menu-container">
             <div>${col1Html}</div>
-            <div>
-                ${col2Html}
-                
-                
-            </div>
+            <div>${col2Html}</div>
         </div>
     `;
 
@@ -139,16 +150,15 @@ function renderizarMenu(container, sucursal, pantalla, grupos) {
 
 function crearSeccionCategoria(categoria, sabores) {
     const saboresOrdenados = sabores.sort((a, b) => a.Sabores.localeCompare(b.Sabores)); 
+    const regexSi = /s[íi]/i; 
+
     let html = `<section class="categoria">
         <h2>${categoria}</h2>
         <div class="sabores-grid">`;
         
-    const regexSi = /s[íi]/i; 
-
     saboresOrdenados.forEach(sabor => {
         const esVegano = sabor.VEGANO && sabor.VEGANO.trim().match(regexSi);
         const esSinTACC = sabor['Sin TACC'] && sabor['Sin TACC'].trim().match(regexSi); 
-        // 🚨 Aplicación de MAYÚSCULAS
         const nombreSaborMayusculas = sabor.Sabores.toUpperCase(); 
 
         html += `<div class="sabor-item">
@@ -161,4 +171,3 @@ function crearSeccionCategoria(categoria, sabores) {
     html += `</div></section>`;
     return html;
 }
-
