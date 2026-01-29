@@ -8,6 +8,51 @@
 </head>
 <body>
     <h1>Generador de Enlaces para Cartelería Digital</h1>
+
+    <div class="config-panel">
+        <h3>🎨 Personalización de Diseño</h3>
+        <div class="config-grid">
+            <div class="config-item">
+                <label>Color de Fondo:</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="color" id="conf-bg-color" value="#f4f4f4">
+                    <label style="font-weight: normal; font-size: 0.9em;">
+                        <input type="checkbox" id="conf-bg-transparent"> Transparente
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-item">
+                <label>Color de Títulos (Categorías):</label>
+                <input type="color" id="conf-title-color" value="#4CAF50">
+            </div>
+            <div class="config-item">
+                <label>Color de Sabores:</label>
+                <input type="color" id="conf-text-color" value="#333333">
+            </div>
+
+            <div class="config-item">
+                <label>Tipografía:</label>
+                <select id="conf-font">
+                    <option value="'Playfair Display', serif">Playfair Display (Elegante)</option>
+                    <option value="'Roboto', sans-serif">Roboto / Arial (Moderna)</option>
+                    <option value="'Courier New', monospace">Courier (Máquina)</option>
+                    <option value="'Verdana', sans-serif">Verdana (Legible)</option>
+                    <option value="cursive">Estilo Manuscrito</option>
+                </select>
+            </div>
+
+            <div class="config-item">
+                <label>Tamaño Títulos (px):</label>
+                <input type="number" id="conf-title-size" value="38" min="10" max="100">
+            </div>
+            <div class="config-item">
+                <label>Tamaño Sabores (px):</label>
+                <input type="number" id="conf-text-size" value="24" min="10" max="100">
+            </div>
+        </div>
+    </div>
+
     <p id="loading">Cargando encabezados del Sheet...</p>
     
     <div id="url-generator">
