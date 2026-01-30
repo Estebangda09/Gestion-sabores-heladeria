@@ -1,29 +1,163 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Enlaces Admin</title>
-    <link rel="stylesheet" href="admin_style.css"> 
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; padding: 20px; }
+    .card-flavor { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; }
+    .status-check { transform: scale(1.5); cursor: pointer; }
+    .hidden { display: none; }
+    #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 999; }
+  </style>
 </head>
 <body>
-    <h1>Generador de Enlaces para Cartelería Digital</h1>
 
-    <div class="config-panel">
-        <h3>🛠️ Configuración Rápida</h3>
-        <p>Utiliza este panel para generar los enlaces. <br><strong>Nota:</strong> Para cambiar el diseño en vivo, edita la hoja "Config" en tu Google Sheet.</p>
-        
-        <div style="margin-top: 20px; text-align: center;">
-            <button id="btn-apply-changes" class="action-btn">
-                🔄 Recargar Lista de URLs
-            </button>
-        </div>
+  <div id="loader"><div class="spinner-border text-primary" role="status"></div></div>
+
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 id="titulo-portal">Gestión de Sabores</h2>
+      <button class="btn btn-success" onclick="guardarTodo()">💾 Guardar Cambios</button>
     </div>
 
-    <p id="loading">Cargando datos del Sheet...</p>
-    
-    <div id="url-generator"></div>
-    
-    <script src="admin_url.js"></script>
+    <div id="admin-panel" class="card p-3 mb-4 border-primary hidden">
+      <h4>🛠️ Panel Administrador</h4>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <select id="new-sabor" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+          <select id="new-sucursal" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" onclick="agregarNuevo()">+ Asignar Sabor a Sucursal</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="lista-sabores">
+      </div>
+  </div>
+
+  <script>
+    let inventarioGlobal = [];
+    let usuarioActual = {};
+
+    window.onload = function() {
+      cargarDatos();
+    };
+
+    function cargarDatos() {
+      // 1. Obtener usuario
+      google.script.run.withSuccessHandler(user => {
+        if(user.error) { document.body.innerHTML = `<h1 class="text-danger">${user.error}</h1>`; return; }
+        
+        usuarioActual = user;
+        document.getElementById('titulo-portal').innerText = `Portal: ${user.sucursal} (${user.email})`;
+        
+        if(user.rol === 'ADMIN') {
+          document.getElementById('admin-panel').classList.remove('hidden');
+          cargarListasAdmin();
+        }
+
+        // 2. Obtener inventario
+        google.script.run.withSuccessHandler(renderizarInventario).obtenerInventario();
+
+      }).obtenerDatosUsuario();
+    }
+
+    function renderizarInventario(datos) {
+      inventarioGlobal = datos;
+      const contenedor = document.getElementById('lista-sabores');
+      contenedor.innerHTML = '';
+
+      // Agrupar por Categoría (opcional) o mostrar lista plana
+      datos.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'card-flavor';
+        
+        // Si es admin, mostramos a qué sucursal pertenece cada fila
+        const badgeSucursal = usuarioActual.rol === 'ADMIN' ? `<span class="badge bg-secondary me-2">${item.sucursal}</span>` : '';
+
+        div.innerHTML = `
+          <div class="d-flex align-items-center">
+            ${badgeSucursal}
+            <div>
+              <h5 class="m-0">${item.sabor}</h5>
+              <small class="text-muted">${item.categoria}</small>
+            </div>
+          </div>
+          
+          <div class="d-flex align-items-center gap-3">
+            <div>
+              <label>Pantalla:</label>
+              <select class="form-select form-select-sm" id="pantalla-${index}">
+                <option value="1" ${item.pantalla == 1 ? 'selected' : ''}>Pantalla 1</option>
+                <option value="2" ${item.pantalla == 2 ? 'selected' : ''}>Pantalla 2</option>
+                <option value="3" ${item.pantalla == 3 ? 'selected' : ''}>Pantalla 3</option>
+              </select>
+            </div>
+            
+            <div class="form-check form-switch text-center">
+              <label class="form-check-label d-block small">Disponible</label>
+              <input class="form-check-input status-check" type="checkbox" id="check-${index}" ${item.disponible ? 'checked' : ''}>
+            </div>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+      document.getElementById('loader').classList.add('hidden');
+    }
+
+    function guardarTodo() {
+      document.getElementById('loader').classList.remove('hidden');
+      
+      const cambios = [];
+      inventarioGlobal.forEach((item, index) => {
+        const nuevaPantalla = document.getElementById(`pantalla-${index}`).value;
+        const nuevoEstado = document.getElementById(`check-${index}`).checked;
+
+        // Solo enviamos si hubo cambios (opcional, aquí enviamos todo para asegurar)
+        cambios.push({
+          rowIndex: item.rowIndex,
+          pantalla: nuevaPantalla,
+          disponible: nuevoEstado
+        });
+      });
+
+      google.script.run.withSuccessHandler(res => {
+        alert(res);
+        document.getElementById('loader').classList.add('hidden');
+      }).guardarCambios(cambios);
+    }
+
+    // --- FUNCIONES ADMIN ---
+    function cargarListasAdmin() {
+      google.script.run.withSuccessHandler(data => {
+        const selSabor = document.getElementById('new-sabor');
+        const selSucursal = document.getElementById('new-sucursal');
+        
+        data.sabores.forEach(s => {
+          selSabor.innerHTML += `<option value="${s[0]}|${s[1]}">${s[0]}</option>`;
+        });
+        
+        data.sucursales.forEach(s => {
+          selSucursal.innerHTML += `<option value="${s}">${s}</option>`;
+        });
+      }).obtenerListasAdmin();
+    }
+
+    function agregarNuevo() {
+      const [sabor, categoria] = document.getElementById('new-sabor').value.split('|');
+      const sucursal = document.getElementById('new-sucursal').value;
+      
+      document.getElementById('loader').classList.remove('hidden');
+      google.script.run.withSuccessHandler(() => {
+        alert("Asignación creada");
+        cargarDatos(); // Recargar todo
+      }).agregarAsignacion(sabor, categoria, sucursal);
+    }
+  </script>
 </body>
 </html>
