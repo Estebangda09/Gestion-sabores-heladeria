@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Heladería</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #2c2c2c;
+            color: white;
+            overflow: hidden;
+        }
+
+        .screen-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .left-panel {
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-section {
+            flex: 0 0 auto;
+            background: white;
+            color: #333;
+            padding: 40px;
+        }
+
+        .price-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1.3em;
+        }
+
+        .price-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .price-label .size-detail {
+            font-size: 0.7em;
+            color: #718096;
+            font-weight: normal;
+        }
+
+        .price-value {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 1.2em;
+        }
+
+        .image-section {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ice-cream-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .brand-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            font-size: 4em;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
+            letter-spacing: 2px;
+        }
+
+        .right-panel {
+            background: white;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .menu-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f093fb;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-subtitle {
+            font-size: 1em;
+            color: #718096;
+            margin-top: -15px;
+            margin-bottom: 20px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .flavors-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .flavor-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .flavor-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .flavor-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .flavor-name {
+            color: #2d3748;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .flavor-item.unavailable {
+            opacity: 0.4;
+        }
+
+        .flavor-item.unavailable .flavor-name {
+            text-decoration: line-through;
+        }
+
+        .recomendados {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .recomendados .section-title {
+            color: white;
+            border-bottom-color: rgba(255,255,255,0.3);
+        }
+
+        .recomendados .section-subtitle {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .recomendados .flavor-item {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .recomendados .flavor-item:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .recomendados .flavor-name {
+            color: white;
+        }
+
+        .recomendados .flavor-icon {
+            background: white;
+            color: #667eea;
+        }
+
+        .availability-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .availability-dot {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .error-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #2c2c2c;
+            color: white;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .error-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            font-size: 1.2em;
+            color: #a0aec0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .screen-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+            }
+            
+            .price-section {
+                flex: 1;
+            }
+            
+            .image-section {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando menú...</div>
+    </div>
+
+    <!-- Error Screen -->
+    <div class="error-screen" id="error-screen">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">Error al cargar el menú</div>
+        <div class="error-message">Por favor verifica la configuración</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="screen-container" id="main-content" style="display: none;">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Prices Section -->
+            <div class="price-section">
+                <h2>Precios</h2>
+                <div id="prices-list"></div>
+            </div>
+
+            <!-- Image Section -->
+            <div class="image-section">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b9d;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23c94b4b;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='600' fill='url(%23grad)'/%3E%3Cellipse cx='400' cy='350' rx='180' ry='200' fill='%23ffb3c1' opacity='0.8'/%3E%3Cellipse cx='400' cy='320' rx='160' ry='180' fill='%23ffc9d6' opacity='0.9'/%3E%3Cellipse cx='400' cy='290' rx='140' ry='160' fill='%23ffe0e9'/%3E%3C/svg%3E" 
+                     alt="Helado" 
+                     class="ice-cream-image" 
+                     id="ice-cream-img">
+                <div class="brand-overlay" id="brand-name">HELADERÍA</div>
+                <div class="availability-badge">
+                    <div class="availability-dot"></div>
+                    <span>Disponible Ahora</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div id="menu-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const SHEETS_URL = 'CONFIGURAR_EN_ADMIN'; // Se configurará desde el admin
+        let currentBranch = '';
+        let autoRefreshInterval = null;
+
+        // Obtener ID de sucursal de la URL
+        function getBranchId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('branch') || 'default';
+        }
+
+        // Cargar datos
+        async function loadMenuData() {
+            currentBranch = getBranchId();
+            
+            try {
+                // Intentar cargar desde Google Sheets
+                const sheetsUrl = localStorage.getItem('sheetsUrl');
+                
+                if (sheetsUrl) {
+                    const response = await fetch(`${sheetsUrl}?action=getMenuData&branch=${currentBranch}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displayMenu(data.data);
+                        hideLoading();
+                        return;
+                    }
+                }
+                
+                // Si no hay datos, usar datos de ejemplo
+                loadExampleData();
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                loadExampleData();
+            }
+        }
+
+        // Cargar datos de ejemplo (para demostración)
+        function loadExampleData() {
+            const exampleData = {
+                branch: {
+                    id: currentBranch,
+                    name: 'Sucursal Demo'
+                },
+                prices: {
+                    '1kg': 20500,
+                    'halfKg': 12500,
+                    'quarterKg': 6700,
+                    'cucurucho': 6500,
+                    'vaso': 5000,
+                    'tacitaMed': 6000,
+                    'tacitaChica': 2800,
+                    'milkshake': 7000,
+                    'coolshake': 7000
+                },
+                flavors: {
+                    cremas: [
+                        'Americana', 'Avellana Crocante', 'Banana Split',
+                        'Capuchino al Caramelo', 'Cheese Cream', 'Choco Crunch',
+                        'Dani Corazón', 'Frutilla a la Crema', 'Frutos del Bosque',
+                        'Granizado', 'Menta Granizada', 'Mousse de Limón',
+                        'Mousse de Maracuyá', 'Pistacho Blanco', 'Sambayón',
+                        'Tramontana', 'Vainilla'
+                    ],
+                    chocolates: [
+                        'Chocolate', 'Chocolate Blanco', 'Chocolate Patagónico',
+                        'Marquise de Chocolate', 'Marroc'
+                    ],
+                    dulces: [
+                        'Dulce de Leche', 'Dulce de Leche Bariloche',
+                        'Dulce de Leche Granizado', 'Super Dulce de Leche'
+                    ],
+                    frutas: [
+                        'Frambuesa', 'Frutilla', 'Kiwi y Frutilla', 'Limón', 'Mango'
+                    ],
+                    recomendados: [
+                        'Alfajor de Chocolate', 'Dani Chica', 'Fruti Pause',
+                        'Yogurt con Frutillas', 'Cookies con Dulce de Leche',
+                        'Chocolate Amargo Belga', 'Chocolate Daniel', 'Torta Matilda',
+                        'Berny Mix', 'Carpi Maracuyá', 'Torta Red Velvet'
+                    ]
+                }
+            };
+
+            displayMenu(exampleData);
+            hideLoading();
+        }
+
+        // Mostrar menú
+        function displayMenu(data) {
+            // Actualizar nombre de marca
+            if (data.branch) {
+                document.getElementById('brand-name').textContent = data.branch.name || 'HELADERÍA';
+            }
+
+            // Mostrar precios
+            if (data.prices) {
+                displayPrices(data.prices);
+            }
+
+            // Mostrar sabores
+            if (data.flavors) {
+                displayFlavors(data.flavors);
+            }
+        }
+
+        // Mostrar precios
+        function displayPrices(prices) {
+            const container = document.getElementById('prices-list');
+            
+            const priceItems = [
+                { label: '1 KILO', key: '1kg' },
+                { label: '½ KILO', key: 'halfKg' },
+                { label: '¼ KILO', key: 'quarterKg' },
+                { label: 'CUCURUCHO', detail: '210g', key: 'cucurucho' },
+                { label: 'VASO MEDIANO', detail: '120g', key: 'vaso' },
+                { label: 'TACITA MEDIANA', detail: '200g', key: 'tacitaMed' },
+                { label: 'TACITA CHICA', detail: '60g (sin saber)', key: 'tacitaChica' },
+                { label: 'MILK SHAKE', detail: '200g', key: 'milkshake' },
+                { label: 'COOL SHAKE', detail: '200g', key: 'coolshake' }
+            ];
+
+            container.innerHTML = priceItems.map(item => {
+                const price = prices[item.key] || 0;
+                return `
+                    <div class="price-item">
+                        <span class="price-label">
+                            ${item.label}
+                            ${item.detail ? `<span class="size-detail">${item.detail}</span>` : ''}
+                        </span>
+                        <span class="price-value">$ ${price.toLocaleString('es-AR')}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar sabores
+        function displayFlavors(flavors) {
+            const container = document.getElementById('menu-content');
+            
+            const sections = [
+                { key: 'cremas', title: 'CREMAS', subtitle: 'para deleitarse' },
+                { key: 'chocolates', title: 'CHOCOLATES', subtitle: 'para ser feliz' },
+                { key: 'dulces', title: 'DULCES', subtitle: 'placeres' },
+                { key: 'frutas', title: 'FRUTAS', subtitle: 'de estación' }
+            ];
+
+            let html = '';
+
+            // Secciones normales
+            sections.forEach(section => {
+                if (flavors[section.key] && flavors[section.key].length > 0) {
+                    html += `
+                        <div class="menu-section">
+                            <div class="section-title">
+                                ${section.title}
+                                <div class="section-subtitle">${section.subtitle}</div>
+                            </div>
+                            <div class="flavors-grid">
+                                ${flavors[section.key].map((flavor, index) => {
+                                    const isAvailable = typeof flavor === 'object' ? flavor.available : true;
+                                    const name = typeof flavor === 'object' ? flavor.name : flavor;
+                                    return `
+                                        <div class="flavor-item ${!isAvailable ? 'unavailable' : ''}">
+                                            <div class="flavor-icon">${String.fromCharCode(9679)}</div>
+                                            <div class="flavor-name">${name}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Sección de recomendados
+            if (flavors.recomendados && flavors.recomendados.length > 0) {
+                html += `
+                    <div class="recomendados">
+                        <div class="section-title">
+                            RECOMENDADOS
+                        </div>
+                        <div class="flavors-grid">
+                            ${flavors.recomendados.map((flavor, index) => {
+                                const isAvailable = typeof flavor === 'object' ? flavor.available : true;
+                                const name = typeof flavor === 'object' ? flavor.name : flavor;
+                                return `
+                                    <div class="flavor-item ${!isAvailable ? 'unavailable' : ''}">
+                                        <div class="flavor-icon">★</div>
+                                        <div class="flavor-name">${name}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Ocultar loading
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('main-content').style.display = 'grid';
+        }
+
+        // Mostrar error
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'flex';
+        }
+
+        // Auto-refresh cada 30 segundos
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                loadMenuData();
+            }, 30000);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMenuData();
+            startAutoRefresh();
+        });
+
+        // Limpiar al cerrar
+        window.addEventListener('beforeunload', () => {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
