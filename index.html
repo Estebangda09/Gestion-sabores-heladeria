@@ -409,15 +409,37 @@
                 <div class="form-group">
                     <label>URL de Google Sheets (Script Web App)</label>
                     <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/...">
-                    <small>Ingresa la URL del script web que configuraremos en Google Sheets</small>
+                    <small>Ingresa la URL del script web que configuraste en Google Sheets</small>
                 </div>
                 
                 <button onclick="saveConfig()" class="btn">Guardar Configuración</button>
+                <button onclick="testConnection()" class="btn btn-secondary">Probar Conexión</button>
+                
+                <div id="connection-status" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;"></div>
 
-                <div class="screen-url">
+                <div class="screen-url" style="margin-top: 30px;">
+                    <h3>📝 Instrucciones de Configuración</h3>
+                    <ol style="line-height: 2; color: #333;">
+                        <li>Crea una hoja de cálculo en Google Sheets</li>
+                        <li>Ve a <strong>Extensiones > Apps Script</strong></li>
+                        <li>Copia el código del archivo <code>google-apps-script.js</code></li>
+                        <li>Haz clic en <strong>Implementar > Nueva implementación</strong></li>
+                        <li>Selecciona tipo: <strong>Aplicación web</strong></li>
+                        <li>Configurar:
+                            <ul>
+                                <li>Ejecutar como: <strong>Tu cuenta</strong></li>
+                                <li>Quién tiene acceso: <strong>Cualquiera</strong></li>
+                            </ul>
+                        </li>
+                        <li>Copia la URL generada y pégala arriba</li>
+                        <li>Haz clic en <strong>Probar Conexión</strong></li>
+                    </ol>
+                </div>
+
+                <div class="screen-url" style="margin-top: 20px;">
                     <h3>📺 URLs de Pantallas por Sucursal</h3>
                     <p>Cada sucursal tendrá su propia URL para mostrar en pantalla:</p>
-                    <code id="screen-urls">Configura las sucursales primero</code>
+                    <code id="screen-urls">Primero crea las sucursales</code>
                 </div>
             </div>
         </div>
@@ -466,27 +488,111 @@
             showSuccess('Configuración guardada correctamente');
         }
 
+        // Probar conexión
+        async function testConnection() {
+            const url = document.getElementById('sheets-url').value;
+            if (!url) {
+                showError('Por favor ingresa una URL primero');
+                return;
+            }
+
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#fff3cd';
+            statusDiv.style.color = '#856404';
+            statusDiv.innerHTML = '⏳ Probando conexión con Google Sheets...';
+
+            try {
+                console.log('Probando conexión a:', url);
+                const response = await fetch(`${url}?action=getData`);
+                
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                const data = JSON.parse(text);
+                console.log('Parsed data:', data);
+
+                if (data.success) {
+                    statusDiv.style.background = '#d4edda';
+                    statusDiv.style.color = '#155724';
+                    statusDiv.innerHTML = `
+                        ✅ <strong>Conexión exitosa!</strong><br>
+                        Sucursales: ${data.data.branches?.length || 0}<br>
+                        Sabores: ${data.data.flavors?.length || 0}<br>
+                        Precios configurados: ${Object.keys(data.data.prices || {}).length}
+                    `;
+                    
+                    // Guardar automáticamente si la conexión es exitosa
+                    localStorage.setItem('sheetsUrl', url);
+                    SHEETS_URL = url;
+                    
+                    // Cargar datos
+                    loadData();
+                } else {
+                    throw new Error(data.message || 'Error desconocido del servidor');
+                }
+            } catch (error) {
+                console.error('Error en test de conexión:', error);
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.innerHTML = `
+                    ❌ <strong>Error de conexión</strong><br>
+                    ${error.message}<br><br>
+                    <small>Verifica que:
+                    <ul style="text-align: left; margin-top: 10px;">
+                        <li>La URL sea correcta</li>
+                        <li>El script esté implementado como "Aplicación web"</li>
+                        <li>El acceso esté configurado como "Cualquiera"</li>
+                        <li>Hayas autorizado los permisos de Google</li>
+                    </ul>
+                    </small>
+                `;
+            }
+        }
+
         // Cargar datos
         async function loadData() {
             if (!SHEETS_URL) {
                 console.log('No hay URL configurada');
+                showError('Primero configura la URL de Google Sheets en la pestaña Configuración');
                 return;
             }
 
             try {
+                console.log('Cargando datos desde:', SHEETS_URL);
                 const response = await fetch(`${SHEETS_URL}?action=getData`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('Datos recibidos:', data);
                 
-                branches = data.branches || [];
-                flavors = data.flavors || [];
-                prices = data.prices || {};
-                
-                updateBranchesUI();
-                updateFlavorsUI();
-                updateBranchSelects();
-                updateScreenUrls();
+                if (data.success) {
+                    branches = data.data.branches || [];
+                    flavors = data.data.flavors || [];
+                    prices = data.data.prices || {};
+                    
+                    console.log('Sucursales cargadas:', branches);
+                    console.log('Sabores cargados:', flavors);
+                    console.log('Precios cargados:', prices);
+                    
+                    updateBranchesUI();
+                    updateFlavorsUI();
+                    updateBranchSelects();
+                    updateScreenUrls();
+                    
+                    showSuccess(`Datos cargados: ${branches.length} sucursales, ${flavors.length} sabores`);
+                } else {
+                    throw new Error(data.message || 'Error desconocido');
+                }
             } catch (error) {
                 console.error('Error cargando datos:', error);
+                showError('Error al cargar datos: ' + error.message + '. Verifica la configuración.');
             }
         }
 
@@ -694,16 +800,21 @@
         // Actualizar URLs de pantallas
         function updateScreenUrls() {
             const container = document.getElementById('screen-urls');
-            const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'display.html');
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'display.html').replace('admin.html', 'display.html');
             
             if (branches.length === 0) {
-                container.textContent = 'Configura las sucursales primero';
+                container.textContent = 'Primero crea las sucursales en la pestaña "Sucursales"';
+                container.style.fontSize = '1em';
+                container.style.color = '#666';
                 return;
             }
 
             container.innerHTML = branches.map(branch => 
-                `<strong>${branch.name}:</strong> ${baseUrl}?branch=${branch.id}`
-            ).join('<br><br>');
+                `<div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <strong style="color: #667eea;">${branch.name}:</strong><br>
+                    <span style="font-size: 0.9em; color: #666;">${baseUrl}?branch=${branch.id}</span>
+                </div>`
+            ).join('');
         }
 
         // Eliminar sucursal
