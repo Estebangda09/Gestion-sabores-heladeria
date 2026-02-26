@@ -484,33 +484,40 @@
 
         function displayPrices(precios) {
             const container = document.getElementById('prices-list');
-            
-            const priceItems = [
-                { label: '1 KILO', key: '1kg' },
-                { label: '½ KILO', key: 'halfKg' },
-                { label: '¼ KILO', key: 'quarterKg' },
-                { label: 'CUCURUCHO', detail: '210g', key: 'cucurucho' },
-                { label: 'VASO MEDIANO', detail: '120g', key: 'vaso' },
-                { label: 'TACITA MEDIANA', detail: '200g', key: 'tacitaMed' },
-                { label: 'TACITA CHICA', detail: '60g', key: 'tacitaChica' },
-                { label: 'MILK SHAKE', detail: '200g', key: 'milkshake' },
-                { label: 'COOL SHAKE', detail: '200g', key: 'coolshake' }
-            ];
+            if (!precios || Object.keys(precios).length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No hay precios configurados</p>';
+                return;
+            }
 
-            container.innerHTML = priceItems.map(item => {
-                const price = precios[item.key];
-                if (!price) return '';
+            // Obtener los labels desde el appState si están disponibles
+            const preciosHTML = Object.entries(precios).map(([key, value]) => {
+                // Mapeo de IDs a labels legibles
+                const labelMap = {
+                    '1kg': { label: '1 KILO', detalle: '' },
+                    'halfKg': { label: '½ KILO', detalle: '' },
+                    'quarterKg': { label: '¼ KILO', detalle: '' },
+                    'cucurucho': { label: 'CUCURUCHO', detalle: '210g' },
+                    'vaso': { label: 'VASO MEDIANO', detalle: '120g' },
+                    'tacitaMed': { label: 'TACITA MEDIANA', detalle: '200g' },
+                    'tacitaChica': { label: 'TACITA CHICA', detalle: '60g' },
+                    'milkshake': { label: 'MILK SHAKE', detalle: '200g' },
+                    'coolshake': { label: 'COOL SHAKE', detalle: '200g' }
+                };
+
+                const info = labelMap[key] || { label: key.toUpperCase(), detalle: '' };
                 
                 return `
                     <div class="price-item">
                         <span class="price-label">
-                            ${item.label}
-                            ${item.detail ? `<span class="size-detail">${item.detail}</span>` : ''}
+                            ${info.label}
+                            ${info.detalle ? `<span class="size-detail">${info.detalle}</span>` : ''}
                         </span>
-                        <span class="price-value">$ ${price.toLocaleString('es-AR')}</span>
+                        <span class="price-value">$ ${value.toLocaleString('es-AR')}</span>
                     </div>
                 `;
             }).join('');
+
+            container.innerHTML = preciosHTML;
         }
 
         function displayFlavors(categorias) {
