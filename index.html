@@ -910,6 +910,36 @@
         </div>
     </div>
 
+    <div id="modalCamposPrecios" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Gestionar Campos de Precios</h2>
+                <span class="close-btn" onclick="closeModal('modalCamposPrecios')">&times;</span>
+            </div>
+            <p style="margin-bottom: 20px; color: #718096;">
+                Configura qué campos de precios mostrar en tu sistema. Puedes activar/desactivar, editar nombres y agregar nuevos.
+            </p>
+            
+            <button class="btn btn-primary" onclick="agregarCampoPrecio()" style="margin-bottom: 20px;">+ Agregar Campo</button>
+            
+            <div class="table-container">
+                <table id="table-campos-precios">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Detalle</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <button class="btn btn-success" onclick="guardarCamposPrecios()" style="margin-top: 20px;">Guardar Cambios</button>
+        </div>
+    </div>
+
     <script>
         // Generate UUID
         function generateUUID() {
@@ -930,22 +960,26 @@
                 global: {},
                 porSucursal: {}
             },
+            camposPrecios: [], // NUEVO: Campos de precios configurables
             visibilidad: {},
             usuarios: [],
-            sheetsUrl: localStorage.getItem('sheetsUrl') || ''
+            sheetsUrl: localStorage.getItem('sheetsUrl') || '',
+            config: {
+                sheetsUrl: localStorage.getItem('sheetsUrl') || ''
+            }
         };
 
-        // Tamaños de precios disponibles
-        const TAMANOS_PRECIOS = [
-            { id: '1kg', label: '1 KILO' },
-            { id: 'halfKg', label: '½ KILO' },
-            { id: 'quarterKg', label: '¼ KILO' },
-            { id: 'cucurucho', label: 'CUCURUCHO 210g' },
-            { id: 'vaso', label: 'VASO MEDIANO 120g' },
-            { id: 'tacitaMed', label: 'TACITA MEDIANA 200g' },
-            { id: 'tacitaChica', label: 'TACITA CHICA 60g' },
-            { id: 'milkshake', label: 'MILK SHAKE 200g' },
-            { id: 'coolshake', label: 'COOL SHAKE 200g' }
+        // Tamaños de precios POR DEFECTO (ahora editables)
+        const DEFAULT_CAMPOS_PRECIOS = [
+            { id: '1kg', label: '1 KILO', detalle: '', activo: true },
+            { id: 'halfKg', label: '½ KILO', detalle: '', activo: true },
+            { id: 'quarterKg', label: '¼ KILO', detalle: '', activo: true },
+            { id: 'cucurucho', label: 'CUCURUCHO', detalle: '210g', activo: true },
+            { id: 'vaso', label: 'VASO MEDIANO', detalle: '120g', activo: true },
+            { id: 'tacitaMed', label: 'TACITA MEDIANA', detalle: '200g', activo: true },
+            { id: 'tacitaChica', label: 'TACITA CHICA', detalle: '60g', activo: true },
+            { id: 'milkshake', label: 'MILK SHAKE', detalle: '200g', activo: true },
+            { id: 'coolshake', label: 'COOL SHAKE', detalle: '200g', activo: true }
         ];
 
         // ============================================
@@ -954,6 +988,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
+            
+            // Inicializar campos de precios si no existen
+            if (!appState.camposPrecios || appState.camposPrecios.length === 0) {
+                appState.camposPrecios = [...DEFAULT_CAMPOS_PRECIOS];
+                saveToLocalStorage();
+            }
+            
             updateAllUI();
             renderPreciosGlobalForm();
         });
@@ -1437,7 +1478,7 @@
                     .map(catId => appState.categorias.find(c => c.id === catId)?.nombre)
                     .filter(Boolean);
 
-                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'display.html');
+                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '') + '/display.html';
                 const url = `${baseUrl}?screen=${pantalla.id}`;
 
                 const div = document.createElement('div');
@@ -1452,11 +1493,19 @@
                     <div class="action-buttons" style="margin-top: 10px;">
                         <button class="btn btn-primary btn-small" onclick="openModalPantalla('${pantalla.id}')">Editar</button>
                         <button class="btn btn-danger btn-small" onclick="deletePantalla('${pantalla.id}')">Eliminar</button>
-                        <button class="btn btn-success btn-small" onclick="window.open('${url}', '_blank')">Abrir</button>
+                        <button class="btn btn-success btn-small" onclick="abrirPantalla('${url}')">Abrir</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function abrirPantalla(url) {
+            // Asegurar que la URL de sheets esté guardada en localStorage para que display.html la use
+            if (appState.sheetsUrl) {
+                localStorage.setItem('sheetsUrl', appState.sheetsUrl);
+            }
+            window.open(url, '_blank');
         }
 
         // ============================================
@@ -1469,14 +1518,26 @@
             
             container.innerHTML = '';
             
-            TAMANOS_PRECIOS.forEach(tamano => {
-                const value = appState.precios.global[tamano.id] || '';
+            // Botón para gestionar campos
+            const headerDiv = document.createElement('div');
+            headerDiv.style.marginBottom = '20px';
+            headerDiv.innerHTML = `
+                <button type="button" class="btn btn-secondary" onclick="openModalCamposPrecios()">
+                    ⚙️ Gestionar Campos de Precios
+                </button>
+            `;
+            container.parentElement.insertBefore(headerDiv, container);
+            
+            const camposActivos = appState.camposPrecios.filter(c => c.activo);
+            
+            camposActivos.forEach(campo => {
+                const value = appState.precios.global[campo.id] || '';
                 
                 const div = document.createElement('div');
                 div.className = 'form-group';
                 div.innerHTML = `
-                    <label>${tamano.label}</label>
-                    <input type="number" id="precio-global-${tamano.id}" value="${value}" placeholder="0">
+                    <label>${campo.label}${campo.detalle ? ` (${campo.detalle})` : ''}</label>
+                    <input type="number" id="precio-global-${campo.id}" value="${value}" placeholder="0">
                 `;
                 container.appendChild(div);
             });
@@ -1485,10 +1546,12 @@
         function savePreciosGlobal(e) {
             e.preventDefault();
             
-            TAMANOS_PRECIOS.forEach(tamano => {
-                const value = document.getElementById(`precio-global-${tamano.id}`).value;
+            const camposActivos = appState.camposPrecios.filter(c => c.activo);
+            
+            camposActivos.forEach(campo => {
+                const value = document.getElementById(`precio-global-${campo.id}`)?.value;
                 if (value) {
-                    appState.precios.global[tamano.id] = parseInt(value);
+                    appState.precios.global[campo.id] = parseInt(value);
                 }
             });
 
@@ -1534,15 +1597,17 @@
             `;
 
             const form = document.getElementById(`form-precios-sucursal-${sucursalId}`);
-            TAMANOS_PRECIOS.forEach(tamano => {
-                const value = preciosSuc[tamano.id] || '';
-                const globalValue = appState.precios.global[tamano.id] || '';
+            const camposActivos = appState.camposPrecios.filter(c => c.activo);
+            
+            camposActivos.forEach(campo => {
+                const value = preciosSuc[campo.id] || '';
+                const globalValue = appState.precios.global[campo.id] || '';
                 
                 const div = document.createElement('div');
                 div.className = 'form-group';
                 div.innerHTML = `
-                    <label>${tamano.label}</label>
-                    <input type="number" id="precio-suc-${sucursalId}-${tamano.id}" value="${value}" placeholder="Global: ${globalValue || 'No configurado'}">
+                    <label>${campo.label}${campo.detalle ? ` (${campo.detalle})` : ''}</label>
+                    <input type="number" id="precio-suc-${sucursalId}-${campo.id}" value="${value}" placeholder="Global: ${globalValue || 'No configurado'}">
                 `;
                 form.appendChild(div);
             });
@@ -1555,12 +1620,14 @@
                 appState.precios.porSucursal[sucursalId] = {};
             }
 
-            TAMANOS_PRECIOS.forEach(tamano => {
-                const value = document.getElementById(`precio-suc-${sucursalId}-${tamano.id}`).value;
+            const camposActivos = appState.camposPrecios.filter(c => c.activo);
+            
+            camposActivos.forEach(campo => {
+                const value = document.getElementById(`precio-suc-${sucursalId}-${campo.id}`)?.value;
                 if (value) {
-                    appState.precios.porSucursal[sucursalId][tamano.id] = parseInt(value);
+                    appState.precios.porSucursal[sucursalId][campo.id] = parseInt(value);
                 } else {
-                    delete appState.precios.porSucursal[sucursalId][tamano.id];
+                    delete appState.precios.porSucursal[sucursalId][campo.id];
                 }
             });
 
@@ -1872,10 +1939,24 @@
                 const result = await response.json();
 
                 if (result.success && result.data) {
+                    // Cargar todos los datos
                     Object.assign(appState, result.data);
+                    
+                    // Si viene la URL de sheets en los datos, actualizarla
+                    if (result.data.sheetsUrl) {
+                        appState.sheetsUrl = result.data.sheetsUrl;
+                        localStorage.setItem('sheetsUrl', result.data.sheetsUrl);
+                        document.getElementById('sheets-url').value = result.data.sheetsUrl;
+                    }
+                    
+                    // Si no hay campos de precios, usar los por defecto
+                    if (!appState.camposPrecios || appState.camposPrecios.length === 0) {
+                        appState.camposPrecios = [...DEFAULT_CAMPOS_PRECIOS];
+                    }
+                    
                     saveToLocalStorage();
                     updateAllUI();
-                    showAlert('success', '✅ Datos cargados correctamente');
+                    showAlert('success', '✅ Datos cargados correctamente desde Google Sheets');
                 } else {
                     throw new Error(result.message || 'Error desconocido');
                 }
@@ -1921,8 +2002,15 @@
                     statusDiv.className = 'connection-status success';
                     statusDiv.innerHTML = '<p>✅ Conexión exitosa con Google Sheets</p>';
                     appState.sheetsUrl = url;
+                    
+                    // Guardar en localStorage Y en el appState
                     localStorage.setItem('sheetsUrl', url);
                     saveToLocalStorage();
+                    
+                    // IMPORTANTE: Sincronizar para que la URL quede guardada en Google Sheets
+                    await syncData();
+                    
+                    showAlert('success', 'URL guardada y sincronizada con Google Sheets');
                 } else {
                     throw new Error(data.message);
                 }
@@ -1958,6 +2046,74 @@
             if (confirm('¿Cerrar sesión?')) {
                 window.location.reload();
             }
+        }
+
+        // ============================================
+        // GESTIÓN DE CAMPOS DE PRECIOS
+        // ============================================
+
+        function openModalCamposPrecios() {
+            renderCamposPreciosTable();
+            openModal('modalCamposPrecios');
+        }
+
+        function renderCamposPreciosTable() {
+            const tbody = document.querySelector('#table-campos-precios tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            appState.camposPrecios.forEach((campo, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="text" value="${campo.label}" 
+                               onchange="appState.camposPrecios[${index}].label = this.value"
+                               style="width: 100%; padding: 5px;">
+                    </td>
+                    <td>
+                        <input type="text" value="${campo.detalle || ''}" 
+                               onchange="appState.camposPrecios[${index}].detalle = this.value"
+                               placeholder="Ej: 200g"
+                               style="width: 100%; padding: 5px;">
+                    </td>
+                    <td>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${campo.activo ? 'checked' : ''} 
+                                   onchange="appState.camposPrecios[${index}].activo = this.checked">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn btn-danger btn-small" onclick="eliminarCampoPrecio(${index})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function agregarCampoPrecio() {
+            const nuevoCampo = {
+                id: 'campo_' + Date.now(),
+                label: 'Nuevo Campo',
+                detalle: '',
+                activo: true
+            };
+            appState.camposPrecios.push(nuevoCampo);
+            renderCamposPreciosTable();
+        }
+
+        function eliminarCampoPrecio(index) {
+            if (!confirm('¿Eliminar este campo de precio?')) return;
+            appState.camposPrecios.splice(index, 1);
+            renderCamposPreciosTable();
+        }
+
+        function guardarCamposPrecios() {
+            saveToLocalStorage();
+            syncToSheets();
+            renderPreciosGlobalForm();
+            closeModal('modalCamposPrecios');
+            showAlert('success', 'Campos de precios actualizados');
         }
 
         // ============================================
