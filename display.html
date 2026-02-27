@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú - Heladería</title>
+    <title>Pantalla - Heladería</title>
     <style>
         * {
             margin: 0;
@@ -13,196 +13,174 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #2c2c2c;
-            color: white;
+            background: #f5f5f5;
             overflow: hidden;
-        }
-
-        .screen-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            width: 100vw;
             height: 100vh;
-            gap: 0;
         }
 
-        .left-panel {
-            background: #1a1a1a;
+        /* PANTALLA DE PRECIOS */
+        .screen-prices {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px;
+        }
+
+        .screen-prices.active {
             display: flex;
             flex-direction: column;
-        }
-
-        .price-section {
-            flex: 0 0 auto;
-            background: white;
-            color: #333;
-            padding: 40px;
-        }
-
-        .price-section h2 {
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .price-item {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 1.3em;
+            justify-content: center;
         }
 
-        .price-label {
-            font-weight: 600;
-            color: #4a5568;
+        .prices-title {
+            font-size: 5em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 60px;
+            text-align: center;
         }
 
-        .price-label .size-detail {
-            font-size: 0.7em;
+        .prices-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 90%;
+        }
+
+        .price-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .price-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .price-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            font-size: 4em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .price-name {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .price-detail {
+            font-size: 1.2em;
             color: #718096;
-            font-weight: normal;
+            margin-bottom: 20px;
         }
 
         .price-value {
+            font-size: 3.5em;
             font-weight: bold;
-            color: #2d3748;
-            font-size: 1.2em;
+            color: #667eea;
         }
 
-        .image-section {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ice-cream-image {
+        /* PANTALLA DE SABORES */
+        .screen-flavors {
+            display: none;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            animation: fadeIn 1s ease-in;
-        }
-
-        .brand-overlay {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
-            font-size: 4em;
-            font-weight: 900;
-            color: rgba(255, 255, 255, 0.9);
-            text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
-            letter-spacing: 2px;
-        }
-
-        .right-panel {
             background: white;
-            padding: 40px;
-            overflow-y: auto;
+            padding: 60px;
         }
 
-        .menu-section {
+        .screen-flavors.active {
+            display: block;
+        }
+
+        .flavors-header {
+            text-align: center;
             margin-bottom: 40px;
         }
 
-        .section-title {
-            font-size: 1.8em;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #f093fb;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .flavors-title {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
         }
 
-        .section-subtitle {
-            font-size: 1em;
-            color: #718096;
-            margin-top: -15px;
-            margin-bottom: 20px;
-            text-transform: none;
-            letter-spacing: 0;
-        }
-
-        .flavors-grid {
+        .categories-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        /* Auto-detect mejor layout según cantidad de categorías */
+        .categories-container.cols-1 { grid-template-columns: 1fr; }
+        .categories-container.cols-2 { grid-template-columns: 1fr 1fr; }
+        .categories-container.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+        .category-section {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .category-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .flavors-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
         }
 
         .flavor-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .flavor-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .flavor-icon {
-            width: 30px;
-            height: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            margin-right: 15px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .flavor-name {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.3em;
             color: #2d3748;
-            font-size: 1.1em;
             font-weight: 500;
-        }
-
-        .flavor-item.unavailable {
-            opacity: 0.4;
-        }
-
-        .flavor-item.unavailable .flavor-name {
-            text-decoration: line-through;
-        }
-
-        .availability-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #48bb78;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .availability-dot {
+        .flavor-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .flavor-item.unavailable {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .flavor-dot {
             width: 12px;
             height: 12px;
-            background: white;
+            background: #667eea;
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            flex-shrink: 0;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
+        /* LOADING */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -236,6 +214,7 @@
             color: white;
         }
 
+        /* ERROR */
         .error-screen {
             display: none;
             position: fixed;
@@ -277,22 +256,15 @@
             font-size: 0.8em;
         }
 
-        @media (max-width: 1200px) {
-            .screen-container {
+        /* Responsive para pantallas verticales */
+        @media (orientation: portrait) {
+            .prices-grid {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr;
             }
-            
-            .left-panel {
-                flex-direction: row;
-            }
-            
-            .price-section {
-                flex: 1;
-            }
-            
-            .image-section {
-                display: none;
+
+            .categories-container.cols-2,
+            .categories-container.cols-3 {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -301,69 +273,64 @@
     <!-- Loading Screen -->
     <div class="loading-screen" id="loading">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Cargando menú...</div>
+        <div class="loading-text">Cargando pantalla...</div>
     </div>
 
     <!-- Error Screen -->
     <div class="error-screen" id="error-screen">
         <div class="error-icon">⚠️</div>
-        <div class="error-title">Error al cargar el menú</div>
-        <div class="error-message" id="error-message">Por favor verifica la configuración</div>
+        <div class="error-title">Error al cargar</div>
+        <div class="error-message" id="error-message">Verifica la configuración</div>
     </div>
 
-    <!-- Main Content -->
-    <div class="screen-container" id="main-content" style="display: none;">
-        <!-- Left Panel -->
-        <div class="left-panel">
-            <!-- Prices Section -->
-            <div class="price-section">
-                <h2>Precios</h2>
-                <div id="prices-list"></div>
-            </div>
+    <!-- Pantalla de Precios -->
+    <div class="screen-prices" id="screen-prices">
+        <div class="prices-title">PRECIOS</div>
+        <div class="prices-grid" id="prices-grid"></div>
+    </div>
 
-            <!-- Image Section -->
-            <div class="image-section">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b9d;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23c94b4b;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='600' fill='url(%23grad)'/%3E%3Cellipse cx='400' cy='350' rx='180' ry='200' fill='%23ffb3c1' opacity='0.8'/%3E%3Cellipse cx='400' cy='320' rx='160' ry='180' fill='%23ffc9d6' opacity='0.9'/%3E%3Cellipse cx='400' cy='290' rx='140' ry='160' fill='%23ffe0e9'/%3E%3C/svg%3E" 
-                     alt="Helado" 
-                     class="ice-cream-image" 
-                     id="ice-cream-img">
-                <div class="brand-overlay" id="brand-name">HELADERÍA</div>
-                <div class="availability-badge">
-                    <div class="availability-dot"></div>
-                    <span>Disponible Ahora</span>
-                </div>
-            </div>
+    <!-- Pantalla de Sabores -->
+    <div class="screen-flavors" id="screen-flavors">
+        <div class="flavors-header">
+            <div class="flavors-title" id="screen-title">SABORES</div>
         </div>
-
-        <!-- Right Panel -->
-        <div class="right-panel">
-            <div id="menu-content"></div>
-        </div>
+        <div class="categories-container" id="categories-container"></div>
     </div>
 
     <div class="last-update" id="last-update">Última actualización: --:--</div>
 
     <script>
-        // Configuración
         let SHEETS_URL = '';
         let currentScreenId = '';
+        let screenConfig = null;
         let screenData = null;
         let autoRefreshInterval = null;
         const REFRESH_INTERVAL = 30000; // 30 segundos
         const CACHE_KEY = 'screenData';
 
-        // ============================================
-        // OBTENER ID DE PANTALLA
-        // ============================================
+        // Íconos para los precios (puedes personalizarlos)
+        const PRICE_ICONS = {
+            '1kg': '🍨',
+            'halfKg': '🥄',
+            'quarterKg': '🍦',
+            'cucurucho': '🍦',
+            'vaso': '🥤',
+            'tacitaMed': '🥄',
+            'tacitaChica': '🥄',
+            'milkshake': '🥤',
+            'coolshake': '🥤',
+            'bombon': '🍬',
+            'bochita': '🍦',
+            'tacita': '🥄',
+            'baldes': '🪣',
+            'almendrado': '🍨',
+            'frambiccis': '🍓'
+        };
 
         function getScreenId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('screen');
         }
-
-        // ============================================
-        // INICIALIZACIÓN
-        // ============================================
 
         document.addEventListener('DOMContentLoaded', () => {
             currentScreenId = getScreenId();
@@ -373,29 +340,17 @@
                 return;
             }
 
-            // Cargar URL de Google Sheets desde localStorage
             SHEETS_URL = localStorage.getItem('sheetsUrl');
             
-            // Intentar cargar desde caché primero
             loadFromCache();
-            
-            // Luego cargar desde servidor
-            loadMenuData();
-            
-            // Iniciar actualización automática
+            loadScreenData();
             startAutoRefresh();
         });
 
-        // ============================================
-        // CARGAR DATOS
-        // ============================================
-
-        async function loadMenuData() {
+        async function loadScreenData() {
             try {
-                console.log('Cargando datos para pantalla:', currentScreenId);
-                
                 if (!SHEETS_URL) {
-                    console.log('No hay URL de Google Sheets configurada, usando caché');
+                    console.log('No hay URL configurada, usando caché');
                     return;
                 }
                 
@@ -406,12 +361,11 @@
                 }
                 
                 const result = await response.json();
-                console.log('Respuesta del servidor:', result);
                 
                 if (result.success && result.data) {
                     screenData = result.data;
                     saveToCache(screenData);
-                    displayMenu(screenData);
+                    displayScreen(screenData);
                     hideLoading();
                     updateLastUpdateTime();
                 } else {
@@ -420,28 +374,21 @@
                 
             } catch (error) {
                 console.error('Error cargando datos:', error);
-                
-                // Si hay datos en caché, usarlos
                 const cached = loadFromCache();
                 if (cached) {
-                    console.log('Usando datos del caché');
                     hideLoading();
                 } else {
-                    showError('Error de conexión', 'No se pudo conectar con el servidor y no hay datos en caché');
+                    showError('Error de conexión', 'No se pudo conectar y no hay datos en caché');
                 }
             }
         }
-
-        // ============================================
-        // CACHÉ LOCAL
-        // ============================================
 
         function saveToCache(data) {
             try {
                 localStorage.setItem(CACHE_KEY + '_' + currentScreenId, JSON.stringify(data));
                 localStorage.setItem(CACHE_KEY + '_timestamp_' + currentScreenId, Date.now().toString());
             } catch (e) {
-                console.error('Error guardando en caché:', e);
+                console.error('Error guardando caché:', e);
             }
         }
 
@@ -450,7 +397,7 @@
                 const cached = localStorage.getItem(CACHE_KEY + '_' + currentScreenId);
                 if (cached) {
                     screenData = JSON.parse(cached);
-                    displayMenu(screenData);
+                    displayScreen(screenData);
                     return true;
                 }
             } catch (e) {
@@ -459,112 +406,123 @@
             return false;
         }
 
-        // ============================================
-        // MOSTRAR MENÚ
-        // ============================================
-
-        function displayMenu(data) {
-            console.log('Mostrando menú:', data);
+        function displayScreen(data) {
+            console.log('Mostrando pantalla:', data);
             
-            // Actualizar nombre de marca
-            if (data.sucursal) {
-                document.getElementById('brand-name').textContent = data.sucursal.nombre || 'HELADERÍA';
-            }
-
-            // Mostrar precios
-            if (data.precios) {
-                displayPrices(data.precios);
-            }
-
-            // Mostrar sabores por categoría
-            if (data.categorias) {
-                displayFlavors(data.categorias);
+            if (data.tipo === 'precios') {
+                displayPricesScreen(data);
+            } else if (data.tipo === 'sabores') {
+                displayFlavorsScreen(data);
             }
         }
 
-        function displayPrices(precios) {
-            const container = document.getElementById('prices-list');
-            if (!precios || Object.keys(precios).length === 0) {
-                container.innerHTML = '<p style="color: #718096;">No hay precios configurados</p>';
+        function displayPricesScreen(data) {
+            const pricesScreen = document.getElementById('screen-prices');
+            const flavorsScreen = document.getElementById('screen-flavors');
+            
+            pricesScreen.classList.add('active');
+            flavorsScreen.classList.remove('active');
+            
+            const grid = document.getElementById('prices-grid');
+            grid.innerHTML = '';
+            
+            if (!data.precios || Object.keys(data.precios).length === 0) {
+                grid.innerHTML = '<p style="color: white; font-size: 2em;">No hay precios configurados</p>';
                 return;
             }
 
-            // Obtener los labels desde el appState si están disponibles
-            const preciosHTML = Object.entries(precios).map(([key, value]) => {
-                // Mapeo de IDs a labels legibles
+            Object.entries(data.precios).forEach(([key, value]) => {
                 const labelMap = {
                     '1kg': { label: '1 KILO', detalle: '' },
                     'halfKg': { label: '½ KILO', detalle: '' },
                     'quarterKg': { label: '¼ KILO', detalle: '' },
-                    'cucurucho': { label: 'CUCURUCHO', detalle: '210g' },
+                    'cucurucho': { label: 'CUCURUCHO', detalle: '' },
                     'vaso': { label: 'VASO MEDIANO', detalle: '120g' },
                     'tacitaMed': { label: 'TACITA MEDIANA', detalle: '200g' },
                     'tacitaChica': { label: 'TACITA CHICA', detalle: '60g' },
-                    'milkshake': { label: 'MILK SHAKE', detalle: '200g' },
-                    'coolshake': { label: 'COOL SHAKE', detalle: '200g' }
+                    'milkshake': { label: 'MILKSHAKE', detalle: '200g' },
+                    'coolshake': { label: 'COOLSHAKE', detalle: '200g' },
+                    'bombon': { label: 'BOMBÓN', detalle: '6u' },
+                    'bochita': { label: 'BOCHITA', detalle: '' },
+                    'tacita': { label: 'TACITA/VASITO', detalle: '' },
+                    'baldes': { label: 'BALDES', detalle: '3 LTS' },
+                    'almendrado': { label: 'ALMENDRADO', detalle: 'BARRA 15' },
+                    'frambiccis': { label: 'FRAMBICCIS', detalle: 'POR 5u' }
                 };
 
                 const info = labelMap[key] || { label: key.toUpperCase(), detalle: '' };
-                
-                return `
-                    <div class="price-item">
-                        <span class="price-label">
-                            ${info.label}
-                            ${info.detalle ? `<span class="size-detail">${info.detalle}</span>` : ''}
-                        </span>
-                        <span class="price-value">$ ${value.toLocaleString('es-AR')}</span>
-                    </div>
+                const icon = PRICE_ICONS[key] || '🍨';
+
+                const card = document.createElement('div');
+                card.className = 'price-card';
+                card.innerHTML = `
+                    <div class="price-icon">${icon}</div>
+                    <div class="price-name">${info.label}</div>
+                    ${info.detalle ? `<div class="price-detail">${info.detalle}</div>` : ''}
+                    <div class="price-value">$ ${value.toLocaleString('es-AR')}</div>
                 `;
-            }).join('');
-
-            container.innerHTML = preciosHTML;
-        }
-
-        function displayFlavors(categorias) {
-            const container = document.getElementById('menu-content');
-            container.innerHTML = '';
-
-            // Categorías tienen el formato:
-            // { categoriaId: { nombre, descripcion, sabores: [...] } }
-            
-            Object.values(categorias).forEach(categoria => {
-                if (!categoria.sabores || categoria.sabores.length === 0) return;
-
-                const section = document.createElement('div');
-                section.className = 'menu-section';
-                
-                section.innerHTML = `
-                    <div class="section-title">
-                        ${categoria.nombre}
-                        ${categoria.descripcion ? `<div class="section-subtitle">${categoria.descripcion}</div>` : ''}
-                    </div>
-                    <div class="flavors-grid" id="flavors-${categoria.nombre}"></div>
-                `;
-                
-                container.appendChild(section);
-                
-                const flavorsGrid = section.querySelector('.flavors-grid');
-                
-                categoria.sabores.forEach(sabor => {
-                    const flavorDiv = document.createElement('div');
-                    flavorDiv.className = `flavor-item ${sabor.disponible === false ? 'unavailable' : ''}`;
-                    flavorDiv.innerHTML = `
-                        <div class="flavor-icon">${String.fromCharCode(9679)}</div>
-                        <div class="flavor-name">${sabor.nombre}</div>
-                    `;
-                    flavorsGrid.appendChild(flavorDiv);
-                });
+                grid.appendChild(card);
             });
         }
 
-        // ============================================
-        // AUTO-REFRESH
-        // ============================================
+        function displayFlavorsScreen(data) {
+            const pricesScreen = document.getElementById('screen-prices');
+            const flavorsScreen = document.getElementById('screen-flavors');
+            
+            pricesScreen.classList.remove('active');
+            flavorsScreen.classList.add('active');
+            
+            const title = document.getElementById('screen-title');
+            title.textContent = data.pantalla?.nombre || 'SABORES';
+            
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            if (!data.categorias || Object.keys(data.categorias).length === 0) {
+                container.innerHTML = '<p style="text-align: center; font-size: 2em; color: #718096;">No hay sabores configurados</p>';
+                return;
+            }
+
+            // Determinar número de columnas según cantidad de categorías
+            const numCats = Object.keys(data.categorias).length;
+            container.className = 'categories-container';
+            if (numCats === 1) container.classList.add('cols-1');
+            else if (numCats === 2) container.classList.add('cols-2');
+            else container.classList.add('cols-3');
+
+            Object.values(data.categorias).forEach(categoria => {
+                if (!categoria.sabores || categoria.sabores.length === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.textContent = categoria.nombre;
+                section.appendChild(title);
+
+                const list = document.createElement('div');
+                list.className = 'flavors-list';
+
+                categoria.sabores.forEach(sabor => {
+                    const item = document.createElement('div');
+                    item.className = `flavor-item ${sabor.disponible === false ? 'unavailable' : ''}`;
+                    item.innerHTML = `
+                        <div class="flavor-dot"></div>
+                        <span>${sabor.nombre}</span>
+                    `;
+                    list.appendChild(item);
+                });
+
+                section.appendChild(list);
+                container.appendChild(section);
+            });
+        }
 
         function startAutoRefresh() {
             autoRefreshInterval = setInterval(() => {
-                console.log('Auto-refresh: Actualizando datos...');
-                loadMenuData();
+                console.log('Auto-refresh: Actualizando...');
+                loadScreenData();
             }, REFRESH_INTERVAL);
         }
 
@@ -574,13 +532,8 @@
             document.getElementById('last-update').textContent = `Última actualización: ${timeString}`;
         }
 
-        // ============================================
-        // UI HELPERS
-        // ============================================
-
         function hideLoading() {
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-content').style.display = 'grid';
         }
 
         function showError(title, message) {
@@ -588,10 +541,6 @@
             document.getElementById('error-screen').style.display = 'flex';
             document.getElementById('error-message').textContent = message;
         }
-
-        // ============================================
-        // CLEANUP
-        // ============================================
 
         window.addEventListener('beforeunload', () => {
             if (autoRefreshInterval) {
