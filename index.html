@@ -849,22 +849,45 @@
             </div>
             <form onsubmit="savePantalla(event)">
                 <input type="hidden" id="pantalla-id">
+                
                 <div class="form-group">
                     <label>Nombre de la Pantalla *</label>
                     <input type="text" id="pantalla-nombre" required placeholder="Pantalla Principal Centro">
                 </div>
+                
                 <div class="form-group">
                     <label>Sucursal *</label>
                     <select id="pantalla-sucursal" required></select>
                 </div>
+                
                 <div class="form-group">
                     <label>Número de Pantalla</label>
                     <input type="number" id="pantalla-numero" value="1" min="1">
                 </div>
+                
                 <div class="form-group">
-                    <label>Categorías a mostrar:</label>
-                    <div id="pantalla-categorias" class="checkbox-group"></div>
+                    <label>Tipo de Pantalla *</label>
+                    <select id="pantalla-tipo" required onchange="togglePantallaTipo()">
+                        <option value="">Seleccionar...</option>
+                        <option value="precios">📊 Pantalla de PRECIOS</option>
+                        <option value="sabores">🍨 Pantalla de SABORES</option>
+                    </select>
+                    <small style="display: block; margin-top: 5px; color: #718096;">
+                        Precios: Muestra solo los precios configurados<br>
+                        Sabores: Muestra sabores de las categorías seleccionadas
+                    </small>
                 </div>
+                
+                <div id="pantalla-categorias-container" style="display: none;">
+                    <div class="form-group">
+                        <label>Categorías a mostrar:</label>
+                        <small style="display: block; margin-bottom: 10px; color: #718096;">
+                            Selecciona qué categorías de sabores mostrar en esta pantalla
+                        </small>
+                        <div id="pantalla-categorias" class="checkbox-group"></div>
+                    </div>
+                </div>
+                
                 <button type="submit" class="btn btn-primary">Guardar Pantalla</button>
             </form>
         </div>
@@ -1092,16 +1115,35 @@
                     document.getElementById('pantalla-nombre').value = pantalla.nombre;
                     document.getElementById('pantalla-sucursal').value = pantalla.sucursal;
                     document.getElementById('pantalla-numero').value = pantalla.numero;
+                    document.getElementById('pantalla-tipo').value = pantalla.tipo || 'sabores';
+                    
+                    togglePantallaTipo();
                     
                     setTimeout(() => {
-                        pantalla.categorias.forEach(catId => {
-                            const checkbox = document.getElementById(`cat-${catId}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
+                        if (pantalla.categorias && pantalla.tipo === 'sabores') {
+                            pantalla.categorias.forEach(catId => {
+                                const checkbox = document.getElementById(`cat-${catId}`);
+                                if (checkbox) checkbox.checked = true;
+                            });
+                        }
                     }, 100);
                 }
+            } else {
+                document.getElementById('pantalla-tipo').value = '';
+                togglePantallaTipo();
             }
             openModal('modalPantalla');
+        }
+
+        function togglePantallaTipo() {
+            const tipo = document.getElementById('pantalla-tipo').value;
+            const categoriasContainer = document.getElementById('pantalla-categorias-container');
+            
+            if (tipo === 'sabores') {
+                categoriasContainer.style.display = 'block';
+            } else {
+                categoriasContainer.style.display = 'none';
+            }
         }
 
         function openModalUsuario(id = null) {
@@ -1420,12 +1462,23 @@
             e.preventDefault();
             const id = document.getElementById('pantalla-id').value || generateUUID();
             
-            const checkboxes = document.querySelectorAll('#pantalla-categorias input[type="checkbox"]:checked');
-            const categorias = Array.from(checkboxes).map(cb => cb.value);
+            const tipo = document.getElementById('pantalla-tipo').value;
             
-            if (categorias.length === 0) {
-                showAlert('error', 'Selecciona al menos una categoría');
+            if (!tipo) {
+                showAlert('error', 'Selecciona el tipo de pantalla');
                 return;
+            }
+            
+            let categorias = [];
+            
+            if (tipo === 'sabores') {
+                const checkboxes = document.querySelectorAll('#pantalla-categorias input[type="checkbox"]:checked');
+                categorias = Array.from(checkboxes).map(cb => cb.value);
+                
+                if (categorias.length === 0) {
+                    showAlert('error', 'Selecciona al menos una categoría para pantalla de sabores');
+                    return;
+                }
             }
             
             const pantalla = {
@@ -1433,6 +1486,7 @@
                 nombre: document.getElementById('pantalla-nombre').value,
                 sucursal: document.getElementById('pantalla-sucursal').value,
                 numero: parseInt(document.getElementById('pantalla-numero').value),
+                tipo: tipo,
                 categorias: categorias
             };
 
@@ -1474,20 +1528,35 @@
 
             appState.pantallas.forEach(pantalla => {
                 const sucursal = appState.sucursales.find(s => s.id === pantalla.sucursal);
-                const categoriasNombres = pantalla.categorias
-                    .map(catId => appState.categorias.find(c => c.id === catId)?.nombre)
-                    .filter(Boolean);
+                
+                let categoriasInfo = '';
+                let tipoIcon = '';
+                let tipoText = '';
+                
+                if (pantalla.tipo === 'precios') {
+                    tipoIcon = '📊';
+                    tipoText = 'Pantalla de PRECIOS';
+                    categoriasInfo = 'Muestra todos los precios configurados';
+                } else {
+                    tipoIcon = '🍨';
+                    tipoText = 'Pantalla de SABORES';
+                    const categoriasNombres = (pantalla.categorias || [])
+                        .map(catId => appState.categorias.find(c => c.id === catId)?.nombre)
+                        .filter(Boolean);
+                    categoriasInfo = categoriasNombres.length > 0 ? categoriasNombres.join(', ') : 'Sin categorías';
+                }
 
-                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '') + '/display.html';
+                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '') + '/screen.html';
                 const url = `${baseUrl}?screen=${pantalla.id}`;
 
                 const div = document.createElement('div');
                 div.className = 'screen-config';
                 div.innerHTML = `
-                    <h4>📺 ${pantalla.nombre}</h4>
+                    <h4>${tipoIcon} ${pantalla.nombre}</h4>
+                    <p><strong>Tipo:</strong> ${tipoText}</p>
                     <p><strong>Sucursal:</strong> ${sucursal?.nombre || 'N/A'}</p>
                     <p><strong>Número:</strong> Pantalla ${pantalla.numero}</p>
-                    <p><strong>Categorías:</strong> ${categoriasNombres.join(', ') || 'Ninguna'}</p>
+                    <p><strong>${pantalla.tipo === 'precios' ? 'Contenido' : 'Categorías'}:</strong> ${categoriasInfo}</p>
                     <p><strong>URL:</strong></p>
                     <code style="display: block; background: #f7fafc; padding: 10px; border-radius: 4px; margin: 10px 0; word-break: break-all;">${url}</code>
                     <div class="action-buttons" style="margin-top: 10px;">
